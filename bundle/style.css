@@ -1,0 +1,559 @@
+/* Hearthside — Anna App stylesheet. All styling lives here: Anna's bundle CSP allows
+   stylesheets from the app's own folder only (no inline <style> or style="" attributes). */
+
+/* ---------- fonts (self-hosted, SIL Open Font License — see fonts/LICENSE.txt) ---------- */
+@font-face{font-family:'Fraunces'; src:url(./fonts/fraunces.woff2) format('woff2'); font-weight:100 900; font-style:normal; font-display:swap}
+@font-face{font-family:'Nunito'; src:url(./fonts/nunito.woff2) format('woff2'); font-weight:200 1000; font-style:normal; font-display:swap}
+@font-face{font-family:'Lora'; src:url(./fonts/lora.woff2) format('woff2'); font-weight:400 700; font-style:normal; font-display:swap}
+@font-face{font-family:'Lora'; src:url(./fonts/lora-italic.woff2) format('woff2'); font-weight:400 700; font-style:italic; font-display:swap}
+@font-face{font-family:'Caveat'; src:url(./fonts/caveat-500.woff2) format('woff2'); font-weight:500; font-style:normal; font-display:swap}
+@font-face{font-family:'Caveat'; src:url(./fonts/caveat-600.woff2) format('woff2'); font-weight:600 700; font-style:normal; font-display:swap}
+
+html,body{margin:0; padding:0}
+[hidden]:not([hidden=until-found]){display:none!important}
+
+:root{
+  --bg:#F1EEE3; --surface:#FAF8F0; --raised:#FFFFFF; --paper:#FCFAF2;
+  --ink:#2E2A20; --ink2:#6E6656; --ink3:#9C9382;
+  --line:#DFD8C6; --line2:#EAE4D4;
+  --accent:#4A6B3D; --accent-ink:#F6F3E8; --accent-soft:#E4E8D4; --accent-soft2:#EFF1E3;
+  --chart:#467F2E; --pos:#008A74; --neg:#B5502F; --mid:#8B877C;
+  --hl:#F2E5BC; --danger:#A5402C; --danger-soft:#F4E0D8;
+  --shadow:0 10px 30px rgba(62,52,30,.10),0 2px 6px rgba(62,52,30,.07);
+  --shadow-sm:0 2px 8px rgba(62,52,30,.08);
+  --ring:#4A6B3D;
+  --tip-bg:#2E2A20; --tip-ink:#F6F3E8;
+  --paper-line:#D8CFBA; --paper-dot:#CFC6B0;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1D211C; --surface:#262B24; --raised:#2D332B; --paper:#22271F;
+    --ink:#EAE4D2; --ink2:#ABA28D; --ink3:#7F7767;
+    --line:#3A4135; --line2:#333A2F;
+    --accent:#9DB88B; --accent-ink:#1E241B; --accent-soft:#37402F; --accent-soft2:#2C332A;
+    --chart:#71A24B; --pos:#35A893; --neg:#CF7245; --mid:#96907F;
+    --hl:#5A5030; --danger:#D98A70; --danger-soft:#4A2F26;
+    --shadow:0 10px 30px rgba(0,0,0,.35),0 2px 6px rgba(0,0,0,.3);
+    --shadow-sm:0 2px 8px rgba(0,0,0,.3);
+    --ring:#9DB88B;
+    --tip-bg:#EAE4D2; --tip-ink:#22271F;
+    --paper-line:#39412F; --paper-dot:#434B38;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1D211C; --surface:#262B24; --raised:#2D332B; --paper:#22271F;
+  --ink:#EAE4D2; --ink2:#ABA28D; --ink3:#7F7767;
+  --line:#3A4135; --line2:#333A2F;
+  --accent:#9DB88B; --accent-ink:#1E241B; --accent-soft:#37402F; --accent-soft2:#2C332A;
+  --chart:#71A24B; --pos:#35A893; --neg:#CF7245; --mid:#96907F;
+  --hl:#5A5030; --danger:#D98A70; --danger-soft:#4A2F26;
+  --shadow:0 10px 30px rgba(0,0,0,.35),0 2px 6px rgba(0,0,0,.3);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.3);
+  --ring:#9DB88B;
+  --tip-bg:#EAE4D2; --tip-ink:#22271F;
+  --paper-line:#39412F; --paper-dot:#434B38;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{height:100%}
+body{
+  background:var(--bg); color:var(--ink); min-height:100vh;
+  font-family:'Nunito','Segoe UI',system-ui,sans-serif; font-size:15.5px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit; color:inherit; background:none; border:none; cursor:pointer; padding:0}
+input,textarea,select{font:inherit; color:var(--ink)}
+img{max-width:100%}
+h1,h2,h3{text-wrap:balance; margin:0}
+:focus-visible{outline:2px solid var(--ring); outline-offset:2px; border-radius:4px}
+::selection{background:var(--accent-soft)}
+
+/* ---------- shell ---------- */
+.shell{display:flex; min-height:100vh; max-width:1240px; margin:0 auto}
+.sidebar{
+  width:230px; flex:0 0 230px; padding:26px 18px 0; position:sticky; top:0; height:100vh;
+  display:flex; flex-direction:column; gap:6px;
+}
+.logo{font-family:'Fraunces',Georgia,serif; font-weight:700; font-size:27px; letter-spacing:.2px; padding:0 10px 4px}
+.logo .flame{color:var(--neg)}
+.tagline{font-size:12.5px; color:var(--ink3); padding:0 10px 18px; line-height:1.4}
+.nav{display:flex; flex-direction:column; gap:2px}
+.nav button{
+  display:flex; align-items:center; gap:11px; padding:9px 12px; border-radius:10px;
+  font-weight:700; font-size:14.5px; color:var(--ink2); text-align:left; transition:background .15s,color .15s;
+}
+.nav button:hover{background:var(--accent-soft2); color:var(--ink)}
+.nav button.on{background:var(--accent-soft); color:var(--ink)}
+.nav button svg{width:19px; height:19px; flex:none; opacity:.85}
+.nav .chip{margin-left:auto; font-size:11px; background:var(--accent); color:var(--accent-ink); border-radius:99px; padding:1px 8px; font-weight:800}
+.side-foot{margin-top:auto; text-align:center; padding-bottom:0}
+.side-kesiel{height:210px; display:block; margin:0 auto; filter:drop-shadow(0 6px 10px rgba(0,0,0,.15))}
+.side-kesiel-cap{font-family:'Caveat',cursive; font-size:17px; color:var(--ink2); margin:2px 0 10px}
+.lockbtn{display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; color:var(--ink3); padding:4px 10px; border-radius:8px}
+.lockbtn:hover{background:var(--accent-soft2); color:var(--ink)}
+
+.main{flex:1; min-width:0; padding:26px 30px 90px}
+.view{max-width:780px; margin:0 auto}
+.view.wide{max-width:880px}
+
+/* ---------- topbar (mobile) & bottom nav ---------- */
+.topbar{display:none}
+.bottomnav{display:none}
+
+/* ---------- common bits ---------- */
+.card{background:var(--surface); border:1px solid var(--line2); border-radius:16px; box-shadow:var(--shadow-sm)}
+.btn{
+  display:inline-flex; align-items:center; gap:7px; padding:8px 15px; border-radius:10px;
+  font-weight:700; font-size:14px; background:var(--accent); color:var(--accent-ink); transition:filter .15s;
+}
+.btn:hover{filter:brightness(1.07)}
+.btn.ghost{background:var(--accent-soft2); color:var(--ink); border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--accent-soft)}
+.btn.danger{background:var(--danger-soft); color:var(--danger); border:1px solid transparent}
+.btn.sm{padding:5px 11px; font-size:13px; border-radius:8px}
+.field{width:100%; background:var(--raised); border:1px solid var(--line); border-radius:10px; padding:9px 12px; font-size:14.5px}
+.field::placeholder{color:var(--ink3)}
+label.lbl{display:block; font-size:12.5px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; color:var(--ink3); margin:0 0 6px}
+.muted{color:var(--ink2)} .tiny{font-size:12.5px}
+.h-view{font-family:'Fraunces',Georgia,serif; font-weight:700; font-size:26px; margin-bottom:4px}
+.sub-view{color:var(--ink2); font-size:14px; margin-bottom:22px}
+.toast{
+  position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(8px); z-index:90;
+  background:var(--tip-bg); color:var(--tip-ink); font-weight:700; font-size:13.5px;
+  padding:9px 18px; border-radius:99px; opacity:0; pointer-events:none; transition:opacity .25s,transform .25s;
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+.tagchip{display:inline-flex; align-items:center; gap:4px; background:var(--accent-soft2); border:1px solid var(--line); color:var(--ink2); font-size:12px; font-weight:700; padding:2px 9px; border-radius:99px}
+.moodchip{font-size:12.5px; font-weight:700; color:var(--ink2)}
+
+/* ---------- write view ---------- */
+.greet{font-family:'Fraunces',Georgia,serif; font-size:29px; font-weight:600; margin-bottom:2px}
+.greet-sub{color:var(--ink2); font-size:14px; margin-bottom:20px}
+.promptcard{
+  display:flex; gap:13px; align-items:center; padding:13px 16px; border-radius:14px; margin-bottom:18px;
+  background:var(--accent-soft2); border:1px dashed var(--line);
+}
+.promptcard img{width:40px; height:40px; border-radius:50%; flex:none; background:var(--accent-soft)}
+.prompt-k{font-size:11.5px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:var(--ink3)}
+.prompt-t{font-size:14.5px; color:var(--ink); font-style:italic; font-family:'Lora',Georgia,serif}
+.promptcard .pbtns{margin-left:auto; display:flex; gap:6px; flex:none}
+.editorcard{overflow:clip} /* clip (not hidden) keeps the rounded corners without breaking the sticky toolbar */
+.ed-head{display:flex; align-items:center; gap:12px; padding:16px 22px 0}
+.ed-date{font-size:13px; font-weight:800; color:var(--ink3); letter-spacing:.3px; text-transform:uppercase}
+.ed-status{margin-left:auto; font-size:12.5px; color:var(--ink3); transition:opacity .3s}
+.ed-title{
+  width:100%; border:none; background:none; padding:8px 22px 0; font-family:'Fraunces',Georgia,serif;
+  font-size:24px; font-weight:600; color:var(--ink);
+}
+.ed-title:focus{outline:none}
+.moodrow{display:flex; align-items:center; gap:6px; padding:10px 22px 2px; flex-wrap:wrap}
+.moodrow .mlbl{font-size:12.5px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; color:var(--ink3); margin-right:4px}
+.mood{
+  font-size:19px; line-height:1; padding:6px 9px; border-radius:10px; border:1.5px solid transparent;
+  filter:grayscale(.9) opacity(.7); transition:all .15s;
+}
+.mood:hover{filter:none; background:var(--accent-soft2)}
+.mood.on{filter:none; border-color:var(--accent); background:var(--accent-soft2)}
+.toolbar{
+  display:flex; gap:3px; flex-wrap:wrap; align-items:center; margin:12px 14px 0; padding:6px;
+  background:var(--raised); border:1px solid var(--line2); border-radius:12px; position:sticky; top:8px; z-index:5;
+  box-shadow:var(--shadow-sm);
+}
+.tb{
+  min-width:32px; height:32px; padding:0 8px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center;
+  font-size:14px; font-weight:700; color:var(--ink2);
+}
+.tb:hover{background:var(--accent-soft2); color:var(--ink)}
+.tb svg{width:16px; height:16px}
+.tb-sep{width:1px; height:20px; background:var(--line); margin:0 4px}
+.ed-body{
+  min-height:380px; padding:20px 26px 30px; font-size:16.5px; line-height:32px; outline:none;
+  background:var(--paper); border-radius:0 0 16px 16px; margin-top:12px; color:var(--ink);
+}
+.ed-body:empty::before{content:attr(data-ph); color:var(--ink3); pointer-events:none; font-style:italic}
+.ed-body h2{font-size:22px; line-height:32px; margin:8px 0; font-family:inherit}
+.ed-body h3{font-size:18px; line-height:32px; margin:6px 0; font-family:inherit}
+.ed-body blockquote{margin:8px 0; padding:0 0 0 14px; border-left:3px solid var(--accent); color:var(--ink2); font-style:italic}
+.ed-body img{max-width:70%; display:block; border-radius:10px; margin:10px auto; box-shadow:var(--shadow-sm); border:5px solid var(--raised)}
+.ed-body mark{background:var(--hl); color:inherit; border-radius:3px; padding:0 2px}
+.ed-body a{color:var(--accent)}
+.ed-body ul,.ed-body ol{margin:6px 0; padding-left:26px}
+.font-serif .ed-body{font-family:'Lora',Georgia,serif}
+.font-sans .ed-body{font-family:'Nunito','Segoe UI',sans-serif}
+.font-hand .ed-body{font-family:'Caveat',cursive; font-size:22px}
+.paper-lined .ed-body{background-image:repeating-linear-gradient(to bottom,transparent 0 31px,var(--paper-line) 31px 32px)}
+.paper-dotted .ed-body{background-image:radial-gradient(var(--paper-dot) 1.1px,transparent 1.2px); background-size:22px 22px}
+.paper-grid .ed-body{background-image:linear-gradient(var(--paper-line) 1px,transparent 1px),linear-gradient(90deg,var(--paper-line) 1px,transparent 1px); background-size:32px 32px}
+.ed-foot{display:flex; align-items:center; gap:12px; padding:14px 4px 0; flex-wrap:wrap}
+.ed-foot .wc{font-size:13px; color:var(--ink3); font-weight:700; font-variant-numeric:tabular-nums}
+.tagsin{flex:1; min-width:180px}
+
+/* ---------- entries ---------- */
+.filterrow{display:flex; gap:9px; margin-bottom:16px; flex-wrap:wrap; align-items:center}
+.filterrow .field{flex:1; min-width:220px}
+.tagfilters{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px}
+.tagfilters .tagchip{cursor:pointer}
+.tagfilters .tagchip.on{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.entry{
+  display:flex; gap:16px; padding:17px 20px; margin-bottom:12px; cursor:pointer;
+  transition:transform .15s, box-shadow .15s;
+}
+.entry:hover{transform:translateY(-1px); box-shadow:var(--shadow)}
+.entry .thumb{width:74px; height:74px; border-radius:10px; object-fit:cover; flex:none; border:4px solid var(--raised); box-shadow:var(--shadow-sm)}
+.entry .e-main{min-width:0; flex:1}
+.e-date{font-size:12px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; color:var(--ink3)}
+.e-title{font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:18.5px; margin:1px 0 3px}
+.e-ex{color:var(--ink2); font-size:13.5px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.e-meta{display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap}
+.e-meta .wc{font-size:12px; color:var(--ink3); font-weight:700; font-variant-numeric:tabular-nums}
+.e-acts{display:flex; flex-direction:column; gap:6px; flex:none; opacity:0; transition:opacity .15s}
+.entry:hover .e-acts,.entry:focus-within .e-acts{opacity:1}
+.iconbtn{width:30px; height:30px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; color:var(--ink3)}
+.iconbtn:hover{background:var(--accent-soft2); color:var(--ink)}
+.iconbtn svg{width:15px; height:15px}
+.empty{
+  text-align:center; padding:46px 20px; color:var(--ink2);
+}
+.empty img{height:150px; margin-bottom:10px; opacity:.95}
+.empty .big{font-family:'Fraunces',Georgia,serif; font-size:19px; color:var(--ink); margin-bottom:4px}
+
+/* ---------- reader modal / modals ---------- */
+.overlay{
+  position:fixed; inset:0; background:rgba(30,26,18,.45); backdrop-filter:blur(3px);
+  display:flex; align-items:center; justify-content:center; z-index:60; padding:20px;
+}
+.sheet{background:var(--surface); border-radius:18px; box-shadow:var(--shadow); width:100%; max-width:680px; max-height:88vh; display:flex; flex-direction:column; border:1px solid var(--line2)}
+.sheet-head{display:flex; align-items:center; gap:10px; padding:16px 20px 10px}
+.sheet-body{padding:4px 26px 26px; overflow-y:auto}
+.reader-body{font-size:16px; line-height:30px}
+.reader-body img{max-width:75%; display:block; border-radius:10px; margin:10px auto; border:5px solid var(--raised); box-shadow:var(--shadow-sm)}
+.reader-body blockquote{margin:8px 0; padding-left:14px; border-left:3px solid var(--accent); color:var(--ink2); font-style:italic}
+.reader-body mark{background:var(--hl); color:inherit}
+.sheet.small{max-width:430px}
+.sheet .x{margin-left:auto}
+
+/* ---------- calendar ---------- */
+.calhead{display:flex; align-items:center; gap:10px; margin-bottom:14px}
+.calhead .m{font-family:'Fraunces',Georgia,serif; font-size:21px; font-weight:600; min-width:190px}
+.calgrid{display:grid; grid-template-columns:repeat(7,1fr); gap:7px}
+.dow{font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; color:var(--ink3); text-align:center; padding-bottom:4px}
+.day{
+  aspect-ratio:1; border-radius:11px; background:var(--surface); border:1px solid var(--line2);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; position:relative;
+  font-variant-numeric:tabular-nums; font-weight:700; font-size:13.5px; color:var(--ink2); cursor:default;
+}
+.day.blank{background:none; border:none}
+.day.has{cursor:pointer; color:var(--ink)}
+.day.has:hover{box-shadow:var(--shadow-sm); transform:translateY(-1px)}
+.day.today{border:1.7px solid var(--accent)}
+.day .dm{font-size:10px; line-height:1; color:var(--ink3); font-weight:700}
+.callegend{display:flex; gap:5px; align-items:center; margin-top:16px; font-size:12px; color:var(--ink3); justify-content:flex-end}
+.callegend i{width:14px; height:14px; border-radius:4px; display:inline-block; border:1px solid var(--line2)}
+
+/* ---------- stats ---------- */
+.kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px}
+.kpi{padding:15px 17px}
+.kpi .k-lbl{font-size:11.5px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:var(--ink3)}
+.kpi .k-val{font-size:31px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1.25; font-family:'Fraunces',Georgia,serif}
+.kpi .k-sub{font-size:12px; color:var(--ink2)}
+.kpi .k-val .flame{font-size:20px; vertical-align:2px}
+.chartcard{padding:17px 19px; margin-bottom:14px}
+.chartcard h3{font-size:15.5px; font-weight:800; margin-bottom:2px}
+.chartcard .csub{font-size:12.5px; color:var(--ink3); margin-bottom:12px}
+.chartwrap{position:relative}
+.chartwrap svg{display:block; width:100%}
+.chartwrap svg text{font-family:'Nunito',sans-serif}
+.ctip{
+  position:absolute; pointer-events:none; background:var(--tip-bg); color:var(--tip-ink);
+  font-size:12.5px; font-weight:700; padding:6px 10px; border-radius:8px; white-space:nowrap;
+  transform:translate(-50%,calc(-100% - 10px)); opacity:0; transition:opacity .1s; z-index:5;
+}
+.ctip .tl{opacity:.75; font-weight:600}
+.statnote{display:flex; gap:12px; align-items:center; padding:14px 16px; margin-top:4px; border-radius:14px; background:var(--accent-soft2); border:1px dashed var(--line)}
+.statnote img{width:42px; height:42px; border-radius:50%; flex:none; background:var(--accent-soft)}
+.statnote p{margin:0; font-size:13.5px; color:var(--ink2)}
+
+/* ---------- kesiel chat ---------- */
+.chatcard{display:flex; flex-direction:column; height:calc(100vh - 210px); min-height:440px; overflow:hidden}
+.chat-head{display:flex; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid var(--line2); background:var(--accent-soft2)}
+.chat-head img{width:44px; height:44px; border-radius:50%; background:var(--accent-soft); border:2px solid var(--raised); box-shadow:var(--shadow-sm)}
+.chat-head .n{font-weight:800; font-size:16px; font-family:'Fraunces',Georgia,serif}
+.chat-head .s{font-size:12.5px; color:var(--ink2)}
+.chat-log{flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column; gap:12px}
+.msg{display:flex; gap:10px; max-width:86%}
+.msg .av{width:32px; height:32px; border-radius:50%; flex:none; background:var(--accent-soft); margin-top:2px}
+.msg .bubble{padding:10px 14px; border-radius:14px; font-size:14.5px; line-height:1.55; white-space:pre-wrap; overflow-wrap:break-word}
+.msg.k .bubble{background:var(--surface); border:1px solid var(--line2); border-top-left-radius:4px}
+.msg.me{align-self:flex-end; flex-direction:row-reverse}
+.msg.me .bubble{background:var(--accent); color:var(--accent-ink); border-top-right-radius:4px}
+.msg .bubble.thinking{color:var(--ink3); font-style:italic}
+.chat-hints{display:flex; gap:6px; flex-wrap:wrap; padding:0 18px 10px}
+.chat-hints button{font-size:12.5px; font-weight:700; color:var(--ink2); background:var(--accent-soft2); border:1px solid var(--line); border-radius:99px; padding:4px 12px}
+.chat-hints button:hover{background:var(--accent-soft); color:var(--ink)}
+.chat-in{display:flex; gap:9px; padding:13px 15px; border-top:1px solid var(--line2); background:var(--surface)}
+.chat-in .field{flex:1}
+.chat-off{padding:26px; text-align:center; color:var(--ink2); font-size:14px}
+
+/* ---------- settings ---------- */
+.setsec{padding:18px 21px; margin-bottom:14px}
+.setsec h3{font-size:16px; font-weight:800; margin-bottom:3px}
+.setsec .ssub{font-size:13px; color:var(--ink2); margin-bottom:14px}
+.optrow{display:flex; gap:8px; flex-wrap:wrap}
+.opt{
+  border:1.5px solid var(--line); border-radius:11px; padding:8px 15px; font-weight:700; font-size:13.5px; color:var(--ink2);
+  background:var(--raised);
+}
+.opt:hover{border-color:var(--accent)}
+.opt.on{border-color:var(--accent); background:var(--accent-soft2); color:var(--ink)}
+.paper-demo{display:inline-block; width:44px; height:30px; border-radius:6px; border:1px solid var(--line); vertical-align:-9px; margin-right:8px; background:var(--paper)}
+.pd-lined{background-image:repeating-linear-gradient(to bottom,transparent 0 6px,var(--paper-line) 6px 7px)}
+.pd-dotted{background-image:radial-gradient(var(--paper-dot) 1px,transparent 1.1px); background-size:7px 7px}
+.pd-grid{background-image:linear-gradient(var(--paper-line) 1px,transparent 1px),linear-gradient(90deg,var(--paper-line) 1px,transparent 1px); background-size:8px 8px}
+.setgrid{display:grid; grid-template-columns:1fr 1fr; gap:11px}
+.switchrow{display:flex; align-items:center; gap:12px; justify-content:space-between}
+.switch{position:relative; width:44px; height:25px; border-radius:99px; background:var(--line); transition:background .2s; flex:none}
+.switch::after{content:""; position:absolute; top:3px; left:3px; width:19px; height:19px; border-radius:50%; background:var(--raised); transition:left .2s; box-shadow:var(--shadow-sm)}
+.switch.on{background:var(--accent)}
+.switch.on::after{left:22px}
+.syncstat{font-size:12.5px; color:var(--ink3); margin-top:9px}
+
+/* ---------- lock screen ---------- */
+.lockscreen{
+  position:fixed; inset:0; z-index:100; background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; gap:8px; padding:24px; text-align:center;
+  overflow-y:auto;
+}
+.lockscreen>*{flex:0 0 auto}
+.lockscreen::before{content:""; margin-top:auto}
+.lockscreen::after{content:""; margin-bottom:auto}
+.lockscreen img{height:clamp(120px,26vh,250px); margin-bottom:8px; filter:drop-shadow(0 8px 14px rgba(0,0,0,.18))}
+.lock-t{font-family:'Fraunces',Georgia,serif; font-size:25px; font-weight:700}
+.lock-s{color:var(--ink2); font-size:14px; margin-bottom:12px}
+.lockform{display:flex; gap:8px; width:100%; max-width:330px}
+.lock-hint{font-size:13px; color:var(--ink2); min-height:20px; margin-top:10px}
+.lock-hint b{color:var(--ink)}
+.linky{font-size:13px; font-weight:700; color:var(--accent); text-decoration:underline; text-underline-offset:3px}
+
+/* ---------- app mark (icon beside the wordmark) ---------- */
+.logo{display:flex; align-items:center; gap:10px}
+.logo .mark{width:38px; height:38px; border-radius:11px; flex:none; object-fit:cover; border:2px solid var(--raised); box-shadow:var(--shadow-sm); background:var(--accent-soft)}
+.logo .word{white-space:nowrap}
+
+/* ---------- candle motif ---------- */
+:root{
+  --wax:#F7EFDD; --wax2:#D8C49C; --wax-top:#FCF7EC; --brass:#A97C3F; --brass-hi:#D2AA68;
+  --fl-o:#F0812F; --fl-y:#FFC94D; --fl-c:#FFF5D1; --glow:rgba(255,176,72,.55); --smoke:#9C9382;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --wax:#EADFC6; --wax2:#BFAE8C; --wax-top:#F4ECD9; --brass:#9A743E; --brass-hi:#C9A060; --glow:rgba(255,170,60,.42); --smoke:#7F7767; } }
+:root[data-theme="dark"]{ --wax:#EADFC6; --wax2:#BFAE8C; --wax-top:#F4ECD9; --brass:#9A743E; --brass-hi:#C9A060; --glow:rgba(255,170,60,.42); --smoke:#7F7767; }
+.cdl{display:block; overflow:visible}
+.cdl .glow{opacity:0; transform-box:fill-box; transform-origin:50% 50%; transition:opacity .9s ease}
+.cdl.lit .glow{opacity:1; animation:cdlGlow 3.4s ease-in-out infinite}
+.cdl .ignite{transform-box:fill-box; transform-origin:50% 100%; transform:scale(.15,0); opacity:0; transition:transform .75s cubic-bezier(.3,1.7,.5,1), opacity .2s}
+.cdl.lit .ignite{transform:none; opacity:1}
+.cdl .flick{transform-box:fill-box; transform-origin:50% 100%}
+.cdl.lit .flick{animation:cdlFlick 2.8s ease-in-out infinite}
+.cdl .wicktip{opacity:0; transition:opacity .4s}
+.cdl.lit .wicktip{opacity:1}
+.cdl .smoke{opacity:0; stroke-dasharray:9 80; stroke-dashoffset:89}
+.cdl:not(.lit) .smoke{animation:cdlSmoke 4.2s linear infinite}
+.cdl .spark{opacity:0}
+.cdl.burst .spark{animation:cdlSpark .85s ease-out forwards}
+@keyframes cdlGlow{50%{opacity:.72; transform:scale(.93)}}
+@keyframes cdlFlick{0%,100%{transform:none}22%{transform:scale(.95,1.06) skewX(-2.5deg)}48%{transform:scale(1.04,.96) skewX(1.8deg)}74%{transform:scale(.98,1.03) skewX(-1deg)}}
+@keyframes cdlSmoke{0%{stroke-dashoffset:89; opacity:0}15%{opacity:.55}80%{opacity:.25}100%{stroke-dashoffset:0; opacity:0}}
+@keyframes cdlSpark{0%{opacity:1; transform:none}100%{opacity:0; transform:translate(var(--dx),var(--dy)) scale(.4)}}
+
+.greetrow{display:flex; align-items:flex-end; gap:16px; margin-bottom:20px}
+.greetrow .greet-sub{margin-bottom:0}
+.greetrow .gtext{flex:1; min-width:0}
+.todaycandle{display:flex; flex-direction:column; align-items:center; gap:2px; flex:none; width:96px; padding:4px 2px 2px; border-radius:14px; transition:background .2s}
+.todaycandle:hover{background:var(--accent-soft2)}
+.todaycandle .cdl{width:52px; height:86px}
+.tc-cap{font-family:'Caveat',cursive; font-size:15.5px; line-height:1.1; color:var(--ink2); text-align:center}
+.editorcard.warm{animation:edWarm 1.6s ease-out}
+@keyframes edWarm{0%{box-shadow:var(--shadow-sm)}30%{box-shadow:0 0 0 2px var(--glow),0 0 30px 4px var(--glow)}100%{box-shadow:var(--shadow-sm)}}
+.kpi .k-val .flame{display:inline-block; vertical-align:-3px; margin-left:4px}
+.kpi .k-val .flame .cdl{width:15px; height:25px}
+.btn .cdl{width:14px; height:23px; margin:-4px 0}
+
+/* ---------- reminders ---------- */
+.remindbanner{display:flex; align-items:center; gap:14px; padding:12px 16px; margin-bottom:16px; border:1px solid var(--line); background:linear-gradient(100deg,var(--surface),var(--accent-soft2))}
+.remindbanner .cdl{width:28px; height:46px; flex:none}
+.remindbanner .rb-t{font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:16.5px}
+.remindbanner .rb-s{font-size:13.5px; color:var(--ink2); font-style:italic; font-family:'Lora',Georgia,serif}
+.remindbanner .rb-b{margin-left:auto; display:flex; gap:6px; align-items:center; flex:none}
+.remgrid{display:grid; grid-template-columns:150px 1fr; gap:14px; margin-top:16px}
+.dayrow{display:flex; gap:6px; flex-wrap:wrap}
+.dayrow button{width:38px; height:38px; border-radius:10px; border:1.5px solid var(--line); background:var(--raised); font-weight:800; font-size:13px; color:var(--ink3)}
+.dayrow button:hover{border-color:var(--accent)}
+.dayrow button[aria-pressed="true"]{border-color:var(--accent); background:var(--accent); color:var(--accent-ink)}
+.checkrow{display:flex; align-items:center; gap:9px; margin-top:14px; font-size:14px; color:var(--ink); cursor:pointer}
+.checkrow input{width:17px; height:17px; accent-color:var(--accent); margin:0}
+.notifbox{margin-top:16px; padding:13px 15px; border-radius:12px; background:var(--accent-soft2); border:1px dashed var(--line)}
+.notifbox .nb-t{font-size:13.5px; margin-bottom:10px}
+.notifbox p{margin:10px 0 0}
+#remindBody.off{opacity:.5}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition:none !important; animation:none !important}
+}
+
+/* ---------- responsive ---------- */
+@media (max-width:900px){
+  .sidebar{display:none}
+  .main{padding:14px 14px 96px}
+  .topbar{
+    display:flex; align-items:center; gap:10px; padding:12px 16px; position:sticky; top:0; z-index:40;
+    background:var(--bg); border-bottom:1px solid var(--line2); margin:-14px -14px 16px;
+  }
+  .topbar .logo{font-size:21px; padding:0}
+  .topbar .sp{flex:1}
+  .bottomnav{
+    display:flex; position:fixed; bottom:0; left:0; right:0; z-index:40;
+    background:var(--surface); border-top:1px solid var(--line2); padding:7px 6px calc(7px + env(safe-area-inset-bottom));
+  }
+  .bottomnav button{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:800; color:var(--ink3); padding:4px 0; border-radius:8px}
+  .bottomnav button svg{width:20px; height:20px}
+  .bottomnav button.on{color:var(--accent)}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .setgrid{grid-template-columns:1fr}
+  .chatcard{height:calc(100vh - 250px)}
+  .ed-body{padding:16px 18px 24px}
+  .toolbar{top:62px} /* sit just under the sticky mobile top bar */
+  .entry .thumb{width:56px; height:56px}
+  .topbar .logo .mark{width:30px; height:30px; border-radius:9px}
+  .remgrid{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .greet{font-size:24px}
+  .todaycandle{width:76px}
+  .remindbanner{flex-wrap:wrap}
+  .remindbanner > div:not(.rb-b){flex:1; min-width:0}
+  .remindbanner .rb-b{margin-left:0; width:100%}
+}
+
+/* =====================================================================
+   Anna edition additions
+   ===================================================================== */
+
+/* utility classes (replace former inline styles) */
+.push{margin-left:auto}
+label.lbl.gap,.gap{margin-top:16px}
+label.lbl.gap-s,.gap-s{margin-top:12px}
+.btn.gap-s{display:inline-flex}
+.mb{margin:0 0 12px}
+.mt0{margin-top:0}
+.note{margin:12px 0 0}
+.optrow.end{justify-content:flex-end}
+.btn.center{justify-content:center}
+.w-name{max-width:280px}
+.lbl-soft{text-transform:none; letter-spacing:0; font-weight:600}
+.f-serif{font-family:'Lora',Georgia,serif}
+.f-sans{font-family:'Nunito',sans-serif}
+.f-hand{font-family:'Caveat',cursive; font-size:17px}
+.tb-i i{font-family:Georgia,serif}
+.tb-h3{font-size:12px}
+.tb-hl{background:var(--hl); border-radius:3px; padding:0 4px}
+.sheet-title{font-family:'Fraunces',Georgia,serif; font-size:22px}
+.sheet-title.sm{font-size:19px}
+.rwc{font-size:12px; color:var(--ink3)}
+.chart-empty{font-style:italic; padding:8px 0 2px}
+.setupform{width:100%; max-width:340px; display:flex; flex-direction:column; gap:10px; text-align:left}
+.setup-err{min-height:18px; text-align:center}
+a.btn{text-decoration:none}
+
+/* candle sparks: fixed directions instead of per-element inline custom properties */
+.cdl .sp0{--dx:-13px; --dy:-9px}
+.cdl .sp1{--dx:12px; --dy:-12px; animation-delay:25ms}
+.cdl .sp2{--dx:-8px; --dy:-17px; animation-delay:50ms}
+.cdl .sp3{--dx:9px; --dy:-4px; animation-delay:75ms}
+.cdl .sp4{--dx:2px; --dy:-19px; animation-delay:100ms}
+.cdl .sp5{--dx:-14px; --dy:1px; animation-delay:125ms}
+
+/* a little warmth behind everything, echoing the candle */
+body{background:radial-gradient(1100px 520px at 78% -12%, var(--hearth), transparent 62%) var(--bg) fixed}
+:root{--hearth:rgba(255,196,112,.16)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --hearth:rgba(255,170,80,.07) } }
+:root[data-theme="dark"]{--hearth:rgba(255,170,80,.07)}
+
+/* ---------- boot / loading ---------- */
+.bootscreen{position:fixed; inset:0; z-index:120; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:24px; text-align:center; transition:opacity .35s}
+.bootscreen.gone{opacity:0; pointer-events:none}
+.boot-candle .cdl{width:54px; height:90px}
+.boot-t{font-family:'Fraunces',Georgia,serif; font-size:19px; color:var(--ink2)}
+.boot-err p{margin:0 0 12px; color:var(--ink2); max-width:340px}
+
+/* ---------- editor head & focus mode ---------- */
+.ed-head .iconbtn{margin-left:4px}
+.ed-status{margin-left:auto}
+#focusBtn .i-out{display:none}
+.exitfocus{display:none}
+body.focus .sidebar, body.focus .topbar, body.focus .bottomnav,
+body.focus .greetrow, body.focus .promptcard, body.focus .remindbanner, body.focus .reflectcard{display:none!important}
+body.focus .main{padding-top:34px}
+body.focus #view-write{max-width:820px}
+body.focus .editorcard{box-shadow:var(--shadow)}
+body.focus .ed-body{min-height:calc(100vh - 290px)}
+body.focus #focusBtn .i-in{display:none}
+body.focus #focusBtn .i-out{display:block}
+body.focus .exitfocus{display:block; position:fixed; top:12px; right:16px; z-index:30; opacity:.55; transition:opacity .2s}
+body.focus .exitfocus:hover,body.focus .exitfocus:focus-within{opacity:1}
+body.focus .toolbar{top:8px}
+
+/* ---------- Kesiel reflection ---------- */
+.reflectcard{display:flex; gap:14px; padding:16px 18px; margin-top:16px; background:linear-gradient(120deg,var(--surface),var(--accent-soft2)); border:1px solid var(--line)}
+.reflectcard .rf-av{width:44px; height:44px; border-radius:50%; flex:none; background:var(--accent-soft); border:2px solid var(--raised); box-shadow:var(--shadow-sm)}
+.rf-m{flex:1; min-width:0}
+.rf-k{font-size:11.5px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:var(--ink3)}
+.rf-t{font-family:'Lora',Georgia,serif; font-size:15.5px; line-height:1.65; color:var(--ink); margin:4px 0 10px; white-space:pre-wrap}
+.rf-t.thinking{color:var(--ink3); font-style:italic}
+.rf-prompt{display:flex; gap:8px; align-items:baseline; text-align:left; width:100%; padding:9px 13px; border-radius:11px; background:var(--raised); border:1px dashed var(--line); font-family:'Lora',Georgia,serif; font-style:italic; font-size:14.5px; color:var(--ink); transition:border-color .15s, background .15s}
+.rf-prompt:hover{border-color:var(--accent); background:var(--accent-soft2)}
+.rf-arrow{color:var(--accent); font-style:normal; font-weight:800}
+.rf-acts{display:flex; align-items:center; gap:6px; margin-top:10px}
+.rf-acts .iconbtn{margin-left:auto}
+.reader-note{display:flex; gap:12px; align-items:flex-start; margin-top:18px; padding:13px 15px; border-radius:14px; background:var(--accent-soft2); border:1px dashed var(--line)}
+.reader-note img{width:36px; height:36px; border-radius:50%; flex:none; background:var(--accent-soft)}
+.rn-t{white-space:pre-line; font-family:'Lora',Georgia,serif; font-size:14.5px; line-height:1.6; color:var(--ink2); margin-top:2px}
+.kchip{display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:700; color:var(--accent)}
+
+/* ---------- small refinements ---------- */
+.nav button.on{box-shadow:inset 3px 0 0 var(--accent)}
+.promptcard .pc-m{flex:1; min-width:0}
+.card.entry .e-title{line-height:1.25}
+.chat-log .msg .bubble{font-family:'Nunito','Segoe UI',sans-serif}
+.optrow .btn{white-space:nowrap}
+
+@media (max-width:900px){
+  .toast{bottom:calc(78px + env(safe-area-inset-bottom))}
+  body.focus .main{padding:42px 10px 30px}
+}
+@media (max-width:560px){
+  .promptcard{flex-wrap:wrap; gap:10px 12px}
+  .promptcard .pc-m{flex:1 1 calc(100% - 56px)}
+  .promptcard .pbtns{margin-left:52px}
+  .ed-foot .tagsin{flex:1 1 100%; order:-1}
+  .ed-foot .wc{margin-right:auto}
+  .reflectcard{padding:14px}
+  .reflectcard .rf-av{width:36px; height:36px}
+  .calhead .m{min-width:0; flex:1; font-size:18px}
+}
+
+/* candle colours as classes (SVG presentation attributes can't use var()) */
+.cdl .k-f-brass{fill:var(--brass)}
+.cdl .k-f-brassh{fill:var(--brass-hi)}
+.cdl .k-f-flc{fill:var(--fl-c)}
+.cdl .k-f-flo{fill:var(--fl-o)}
+.cdl .k-f-waxt{fill:var(--wax-top)}
+.cdl .k-fly{fill:var(--fl-y)}
+.cdl .k-s-flo{stop-color:var(--fl-o)}
+.cdl .k-s-fly{stop-color:var(--fl-y)}
+.cdl .k-s-glow{stop-color:var(--glow)}
+.cdl .k-s-wax{stop-color:var(--wax)}
+.cdl .k-s-wax2{stop-color:var(--wax2)}
+.cdl .k-s-waxt{stop-color:var(--wax-top)}
+.cdl .k-st-smoke{stroke:var(--smoke)}
+.cdl .k-st-wax2{stroke:var(--wax2)}

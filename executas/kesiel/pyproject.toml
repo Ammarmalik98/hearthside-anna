@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tool-dev-hearthside-kesiel"
+version = "0.1.0"
+description = "Kesiel — the Executa behind the Hearthside Anna App"
+requires-python = ">=3.10"
+
+[project.scripts]
+"tool-dev-hearthside-kesiel" = "hearthside_kesiel_plugin:main"
+
+[tool.setuptools]
+py-modules = ["hearthside_kesiel_plugin"]

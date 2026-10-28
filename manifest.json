@@ -1,0 +1,45 @@
+{
+  "schema": 2,
+  "required_executas": [
+    { "tool_id": "bundled:kesiel", "version": "latest" }
+  ],
+  "optional_executas": [],
+  "permissions": ["storage.read", "storage.write", "tools.invoke"],
+  "host_capabilities": ["llm.sample", "aps.kv"],
+  "tags": ["journal", "diary", "mood", "writing", "reflection"],
+  "system_prompt_addendum": "Hearthside is the user's private journal. Kesiel is its companion: he reflects on entries (the bundled kesiel tool's reflect method) and suggests prompts (suggest_prompt). Treat journal content as private.",
+  "ui": {
+    "bundle": {
+      "format": "static-spa",
+      "entry": "index.html",
+      "external_origins": []
+    },
+    "views": [
+      {
+        "name": "main",
+        "title": "Hearthside",
+        "default": true,
+        "entry": "index.html",
+        "default_size": { "w": 1120, "h": 820 },
+        "min_size": { "w": 360, "h": 560 },
+        "resizable": true,
+        "single_instance": true
+      }
+    ],
+    "host_api": {
+      "tools": ["required:bundled:kesiel"],
+      "storage": ["get", "set", "delete", "list"],
+      "llm": ["complete", "stream"],
+      "window": ["set_title", "ready"]
+    },
+    "csp_overrides": {
+      "img-src": ["'self'", "data:", "blob:"]
+    },
+    "state_merge": "last_writer_wins"
+  },
+  "dev": {
+    "fixtures": ["fixtures/*.jsonl"],
+    "seed_storage": {},
+    "user_id": 1
+  }
+}

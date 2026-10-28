@@ -1,0 +1,13 @@
+{
+  "slug": "hearthside",
+  "name": "Hearthside",
+  "version": "1.0.0",
+  "tagline": "A warm, distraction-free journal with Kesiel, a companion who reflects on what you write.",
+  "description": "Hearthside is a cozy, distraction-free journal. Write with rich formatting and photos, tag your mood, and watch your habit grow on a calendar and gentle charts. After each entry, Kesiel — your companion — reads it and offers a short, warm reflection and a question to carry into tomorrow. Ask Kesiel to find anything you've written (\"when did I mention the beach?\") or sum up your week. Includes a daily writing reminder, a focus mode, light and dark themes, an optional privacy lock, and backups you can take anywhere. Your journal is saved to your Anna account; Kesiel thinks with Anna's built-in AI, and only reads a page when you save it or ask.",
+  "category": "productivity",
+  "logo_file": "assets/hearthside-icon-512.png",
+  "changelog": "First Anna edition: Kesiel reflections on every entry, Anna storage, focus mode, daily reminders, candle motif.",
+  "bundled_executas": {
+    "kesiel": { "path": "executas/kesiel" }
+  }
+}

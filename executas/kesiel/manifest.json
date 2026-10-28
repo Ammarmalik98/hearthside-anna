@@ -1,0 +1,75 @@
+{
+  "display_name": "Kesiel (Hearthside)",
+  "version": "0.1.0",
+  "description": "Kesiel, the gentle companion inside the Hearthside journal: reflects on journal entries and suggests writing prompts, using Anna's LLM via reverse sampling.",
+  "host_capabilities": [
+    "llm.sample"
+  ],
+  "credentials": [],
+  "runtime": {
+    "type": "binary"
+  },
+  "tools": [
+    {
+      "name": "reflect",
+      "description": "Read one journal entry and return a brief, warm reflection plus one open follow-up question to write about next.",
+      "parameters": [
+        {
+          "name": "text",
+          "type": "string",
+          "description": "The journal entry's plain text.",
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "description": "The entry's title, if any.",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "mood",
+          "type": "string",
+          "description": "Mood the writer picked (e.g. Good, Low).",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "What the writer likes to be called.",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "recent",
+          "type": "string",
+          "description": "Optional short digest of the last few entries, for gentle continuity.",
+          "required": false,
+          "default": ""
+        }
+      ],
+      "timeout": 60
+    },
+    {
+      "name": "suggest_prompt",
+      "description": "Suggest one fresh journaling prompt shaped by the writer's recent entries (themes and moods).",
+      "parameters": [
+        {
+          "name": "recent",
+          "type": "string",
+          "description": "Short digest of recent entries (date, title, mood, opening lines).",
+          "required": false,
+          "default": ""
+        }
+      ],
+      "timeout": 45
+    },
+    {
+      "name": "ping",
+      "description": "Smoke test; returns pong.",
+      "parameters": [],
+      "timeout": 10
+    }
+  ]
+}

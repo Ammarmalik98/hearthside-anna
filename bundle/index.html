@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F1EEE3">
+<title>Hearthside</title>
+<link rel="icon" type="image/webp" href="./img/icon-256.webp">
+<link rel="apple-touch-icon" href="./img/icon-180.png">
+<link rel="stylesheet" href="./style.css">
+<!-- Written by `anna-app dev` / `anna-app apps publish`: maps bundled handles to real tool ids. Must load before app.js. -->
+<script src="./anna-tool-ids.js"></script>
+<script src="./app.js" type="module"></script>
+</head>
+<body>
+
+<!-- ================= LOADING ================= -->
+<div class="bootscreen" id="bootScreen" role="status" aria-live="polite">
+  <span id="bootCandle" class="boot-candle"></span>
+  <div class="boot-t" id="bootText">Opening your journal…</div>
+  <div class="boot-err" id="bootErr" hidden>
+    <p id="bootErrText">Hearthside couldn't reach your journal just now.</p>
+    <button class="btn" id="bootRetry" type="button">Try again</button>
+  </div>
+</div>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="logo"><img class="mark" src="./img/icon-256.webp" alt="" width="38" height="38"><span class="word">Hearthside<span class="flame">.</span></span></div>
+    <div class="tagline">a warm little home for your words</div>
+    <nav class="nav" id="nav" aria-label="Sections">
+      <button data-view="write"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Write</button>
+      <button data-view="entries"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Entries<span class="chip" id="navCount">0</span></button>
+      <button data-view="calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</button>
+      <button data-view="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Stats</button>
+      <button data-view="kesiel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-4-1L3 20l1-5.5a8.5 8.5 0 1 1 17-3z"/></svg>Ask Kesiel</button>
+      <button data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
+    </nav>
+    <div class="side-foot">
+      <button class="lockbtn" id="lockNow" hidden><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Lock journal</button>
+      <div class="side-kesiel-cap">Kesiel is keeping you company</div>
+      <img class="side-kesiel" src="./img/kesiel-body.webp" alt="Kesiel, your journal companion">
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="logo"><img class="mark" src="./img/icon-256.webp" alt="" width="30" height="30"><span class="word">Hearthside<span class="flame">.</span></span></div>
+      <div class="sp"></div>
+      <button class="iconbtn" id="themeQuick" title="Toggle theme" aria-label="Toggle theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+      <button class="iconbtn" id="lockNowM" hidden title="Lock journal" aria-label="Lock journal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>
+    </div>
+
+    <!-- ================= WRITE ================= -->
+    <section class="view" id="view-write">
+      <div class="greetrow">
+        <div class="gtext">
+          <div class="greet" id="greet">Good evening.</div>
+          <div class="greet-sub" id="greetSub">The kettle's on. What's on your mind?</div>
+        </div>
+        <button class="todaycandle" id="todayCandle" type="button">
+          <span id="tcSvg"></span>
+          <span class="tc-cap" id="tcCap">write to light it</span>
+        </button>
+      </div>
+
+      <div class="card remindbanner" id="remindBanner" hidden role="status">
+        <span id="rbSvg" class="rb-c"></span>
+        <div class="rb-m">
+          <div class="rb-t" id="rbTitle">Your candle's waiting.</div>
+          <div class="rb-s" id="rbText"></div>
+        </div>
+        <div class="rb-b">
+          <button class="btn sm" id="rbWrite">Write now</button>
+          <button class="btn ghost sm" id="rbSnooze">In 30 min</button>
+          <button class="iconbtn" id="rbClose" aria-label="Dismiss reminder">✕</button>
+        </div>
+      </div>
+
+      <div class="promptcard">
+        <img src="./img/kesiel-head.webp" alt="">
+        <div class="pc-m">
+          <div class="prompt-k">Kesiel wonders…</div>
+          <div class="prompt-t" id="promptText"></div>
+        </div>
+        <div class="pbtns">
+          <button class="btn ghost sm" id="kesielPrompt" title="Ask Kesiel for a prompt shaped by your recent pages" aria-label="Ask Kesiel for a prompt" hidden>✦</button>
+          <button class="btn ghost sm" id="newPrompt" title="Another prompt" aria-label="Another prompt">↻</button>
+          <button class="btn sm" id="usePrompt">Write about it</button>
+        </div>
+      </div>
+
+      <div class="card editorcard" id="editorCard">
+        <div class="ed-head">
+          <span class="ed-date" id="edDate"></span>
+          <span class="ed-status" id="edStatus" aria-live="polite"></span>
+          <button class="iconbtn" id="focusBtn" type="button" title="Focus mode (Esc to leave)" aria-label="Focus mode" aria-pressed="false">
+            <svg class="i-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+            <svg class="i-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+          </button>
+        </div>
+        <input class="ed-title" id="edTitle" placeholder="Give this entry a title…" maxlength="120" aria-label="Entry title">
+        <div class="moodrow" id="moodRow">
+          <span class="mlbl">Mood</span>
+          <button class="mood" data-m="5" title="Wonderful" aria-label="Wonderful">😄</button>
+          <button class="mood" data-m="4" title="Good" aria-label="Good">🙂</button>
+          <button class="mood" data-m="3" title="Okay" aria-label="Okay">😐</button>
+          <button class="mood" data-m="2" title="Low" aria-label="Low">😔</button>
+          <button class="mood" data-m="1" title="Rough" aria-label="Rough">😢</button>
+        </div>
+        <div class="toolbar" id="toolbar">
+          <button class="tb" data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+          <button class="tb tb-i" data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+          <button class="tb" data-cmd="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+          <button class="tb" data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
+          <span class="tb-sep"></span>
+          <button class="tb" data-block="h2" title="Heading">H</button>
+          <button class="tb tb-h3" data-block="h3" title="Small heading">H</button>
+          <button class="tb" data-block="blockquote" title="Quote">❝</button>
+          <span class="tb-sep"></span>
+          <button class="tb" data-cmd="insertUnorderedList" title="Bullet list">•≡</button>
+          <button class="tb" data-cmd="insertOrderedList" title="Numbered list">1≡</button>
+          <button class="tb" data-hl title="Highlight"><span class="tb-hl">A</span></button>
+          <span class="tb-sep"></span>
+          <button class="tb" id="addPhoto" title="Insert photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></button>
+          <button class="tb" data-clear title="Clear formatting">⌫</button>
+        </div>
+        <div class="ed-body" id="edBody" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Journal entry" data-ph="Dear diary… start anywhere. Kesiel won't judge."></div>
+      </div>
+      <div class="ed-foot">
+        <span class="wc" id="edWords">0 words</span>
+        <input class="field tagsin" id="edTags" placeholder="tags, separated, by, commas" aria-label="Tags">
+        <button class="btn ghost" id="newEntry">＋ New entry</button>
+        <button class="btn" id="saveEntry">Save entry</button>
+      </div>
+
+      <div class="card reflectcard" id="reflectCard" hidden aria-live="polite">
+        <img class="rf-av" src="./img/kesiel-head.webp" alt="">
+        <div class="rf-m">
+          <div class="rf-k">Kesiel reflects</div>
+          <div class="rf-t" id="rfText"></div>
+          <button class="rf-prompt" id="rfPrompt" type="button" hidden><span class="rf-arrow">→</span> <span id="rfPromptText"></span></button>
+          <div class="rf-acts" id="rfActs">
+            <button class="btn ghost sm" id="rfAgain" type="button">Another thought</button>
+            <button class="iconbtn" id="rfClose" type="button" aria-label="Hide Kesiel's reflection">✕</button>
+          </div>
+        </div>
+      </div>
+      <div class="exitfocus" id="exitFocus"><button class="btn ghost sm" id="exitFocusBtn" type="button">Leave focus · Esc</button></div>
+    </section>
+
+    <!-- ================= ENTRIES ================= -->
+    <section class="view" id="view-entries" hidden>
+      <h1 class="h-view">Your entries</h1>
+      <p class="sub-view" id="entriesSub"></p>
+      <div class="filterrow">
+        <input class="field" id="searchBox" placeholder="Search your journal — words, titles, tags…" aria-label="Search entries">
+      </div>
+      <div class="tagfilters" id="tagFilters"></div>
+      <div id="entryList"></div>
+    </section>
+
+    <!-- ================= CALENDAR ================= -->
+    <section class="view" id="view-calendar" hidden>
+      <h1 class="h-view">Calendar</h1>
+      <p class="sub-view">Deeper green, fuller pages — each square is a day of writing.</p>
+      <div class="calhead">
+        <button class="btn ghost sm" id="calPrev" aria-label="Previous month">←</button>
+        <div class="m" id="calMonth"></div>
+        <button class="btn ghost sm" id="calNext" aria-label="Next month">→</button>
+        <button class="btn ghost sm push" id="calToday">Today</button>
+      </div>
+      <div class="calgrid" id="calGrid"></div>
+      <div class="callegend" id="calLegend"><span>fewer</span></div>
+    </section>
+
+    <!-- ================= STATS ================= -->
+    <section class="view wide" id="view-stats" hidden>
+      <h1 class="h-view">Your writing, charted</h1>
+      <p class="sub-view">A gentle look at the habit you're building.</p>
+      <div class="kpis" id="kpis"></div>
+      <div class="card chartcard">
+        <h3>Words per day</h3>
+        <div class="csub">Last 30 days</div>
+        <div class="chartwrap" id="chartWords"></div>
+      </div>
+      <div class="card chartcard">
+        <h3>Entries per month</h3>
+        <div class="csub">Last 6 months</div>
+        <div class="chartwrap" id="chartMonths"></div>
+      </div>
+      <div class="card chartcard">
+        <h3>How you've been feeling</h3>
+        <div class="csub">Mood across all entries</div>
+        <div class="chartwrap" id="chartMoods"></div>
+      </div>
+      <div class="statnote" id="statNote" hidden>
+        <img src="./img/kesiel-head.webp" alt="">
+        <p><b>Kesiel:</b> <span id="statNoteText"></span></p>
+      </div>
+    </section>
+
+    <!-- ================= KESIEL ================= -->
+    <section class="view" id="view-kesiel" hidden>
+      <h1 class="h-view">Ask Kesiel</h1>
+      <p class="sub-view">He's read every page you've written here — ask him to find or recall anything.</p>
+      <div class="card chatcard">
+        <div class="chat-head">
+          <img src="./img/kesiel-head.webp" alt="Kesiel">
+          <div>
+            <div class="n">Kesiel</div>
+            <div class="s" id="kesielStatus">your journal companion</div>
+          </div>
+        </div>
+        <div class="chat-log" id="chatLog" aria-live="polite"></div>
+        <div class="chat-hints" id="chatHints">
+          <button data-q="When did I last write about feeling proud of myself?">“When did I write about feeling proud?”</button>
+          <button data-q="Summarize what my past week has been like, based on my entries.">“Sum up my week”</button>
+          <button data-q="Which entry mentions a place I wanted to visit?">“Find a place I mentioned”</button>
+        </div>
+        <div class="chat-in">
+          <input class="field" id="chatBox" placeholder="Ask about anything you've written…" aria-label="Message Kesiel">
+          <button class="btn" id="chatSend">Ask</button>
+          <button class="btn ghost" id="chatStop" hidden>Stop</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SETTINGS ================= -->
+    <section class="view" id="view-settings" hidden>
+      <h1 class="h-view">Settings</h1>
+      <p class="sub-view">Make the nook yours.</p>
+
+      <div class="card setsec">
+        <h3>Appearance</h3>
+        <div class="ssub">For day writers and Night Owls alike.</div>
+        <label class="lbl">Theme</label>
+        <div class="optrow" id="themeOpts">
+          <button class="opt" data-v="system">Match Anna</button>
+          <button class="opt" data-v="light">☀ Light</button>
+          <button class="opt" data-v="dark">🌙 Dark</button>
+        </div>
+        <label class="lbl gap">Page style</label>
+        <div class="optrow" id="paperOpts">
+          <button class="opt" data-v="plain"><span class="paper-demo"></span>Plain</button>
+          <button class="opt" data-v="lined"><span class="paper-demo pd-lined"></span>Lined</button>
+          <button class="opt" data-v="dotted"><span class="paper-demo pd-dotted"></span>Dotted</button>
+          <button class="opt" data-v="grid"><span class="paper-demo pd-grid"></span>Grid</button>
+        </div>
+        <label class="lbl gap">Writing font</label>
+        <div class="optrow" id="fontOpts">
+          <button class="opt f-serif" data-v="serif">Serif</button>
+          <button class="opt f-sans" data-v="sans">Sans</button>
+          <button class="opt f-hand" data-v="hand">Handwritten</button>
+        </div>
+      </div>
+
+      <div class="card setsec">
+        <h3>Kesiel</h3>
+        <div class="ssub">Your companion reads along so he can reflect and help you find things.</div>
+        <label class="lbl" for="setName">What should Kesiel call you?</label>
+        <input class="field w-name" id="setName" placeholder="Your name (optional)">
+        <div class="switchrow gap">
+          <div><b>Reflect on my entries</b><div class="tiny muted">After you save, Kesiel offers a short reflection and a question to carry forward.</div></div>
+          <button class="switch" id="reflectToggle" role="switch" aria-checked="true" aria-label="Kesiel reflections"></button>
+        </div>
+        <p class="tiny muted note">Kesiel thinks with Anna's built-in AI. Only the entry you're reflecting on (or the pages you ask about) is sent, and only when you save or ask.</p>
+      </div>
+
+      <div class="card setsec" id="remindSec">
+        <h3>Daily reminder</h3>
+        <div class="ssub">A gentle nudge to come back to the page. Pick a time and Kesiel will tap you on the shoulder.</div>
+        <div class="switchrow">
+          <div><b>Remind me to write</b><div class="tiny muted" id="remindSummary"></div></div>
+          <button class="switch" id="remindToggle" role="switch" aria-checked="false" aria-label="Daily reminder"></button>
+        </div>
+        <div id="remindBody">
+          <div class="remgrid">
+            <div><label class="lbl" for="remindTime">Time</label><input type="time" class="field" id="remindTime" value="21:00"></div>
+            <div><label class="lbl">Days</label><div class="dayrow" id="remindDays"></div></div>
+          </div>
+          <label class="checkrow"><input type="checkbox" id="remindSkip"> Skip the reminder if I've already written that day</label>
+          <div class="notifbox">
+            <div class="nb-t" id="notifState"></div>
+            <div class="optrow">
+              <button class="btn sm" id="notifAllow">Allow notifications</button>
+              <button class="btn ghost sm" id="notifTest">Send a test</button>
+              <button class="btn ghost sm" id="remindIcs">📅 Add to my calendar</button>
+            </div>
+            <p class="tiny muted">Reminders arrive while Hearthside is open, even in a background tab. To be reminded when it's fully closed, add it to your calendar: it repeats on the days you picked.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card setsec">
+        <h3>Privacy lock</h3>
+        <div class="ssub">A password keeps casual eyes off your pages. (It locks the app screen — it isn't encryption, so keep backups kind to yourself.)</div>
+        <div id="passOff">
+          <div class="setgrid">
+            <div><label class="lbl" for="passNew">Password</label><input type="password" class="field" id="passNew" autocomplete="new-password"></div>
+            <div><label class="lbl" for="passNew2">Repeat it</label><input type="password" class="field" id="passNew2" autocomplete="new-password"></div>
+          </div>
+          <label class="lbl gap-s" for="passHint">Hint (shown if you forget)</label>
+          <input class="field" id="passHint" placeholder="e.g. the name of my first cat">
+          <button class="btn gap-s" id="passSet">Set password</button>
+        </div>
+        <div id="passOn" hidden>
+          <p class="tiny muted mb">🔒 A password is set. Hint on file: <b id="passHintShow"></b></p>
+          <div class="optrow">
+            <button class="btn ghost" id="passRemove">Remove password</button>
+            <button class="btn" id="lockFromSet">Lock now</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card setsec">
+        <h3>Your journal &amp; backups</h3>
+        <div class="ssub" id="storageWhere">Your journal is saved to your Anna account, so it's there on every device you sign in to.</div>
+        <div class="optrow">
+          <button class="btn" id="exportBtn">⤓ Download backup</button>
+          <button class="btn ghost" id="importBtn">⤒ Restore from backup</button>
+        </div>
+        <p class="tiny muted note" id="storageNote">Coming from the earlier version of Hearthside? Download a backup there, then restore it here.</p>
+      </div>
+
+      <div class="card setsec">
+        <h3>Start over</h3>
+        <div class="ssub">Erases every entry and setting in your journal. Kesiel will pretend not to be sad.</div>
+        <button class="btn danger" id="eraseAll">Erase everything…</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav class="bottomnav" id="bottomnav" aria-label="Sections">
+  <button data-view="write"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Write</button>
+  <button data-view="entries"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Entries</button>
+  <button data-view="calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</button>
+  <button data-view="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Stats</button>
+  <button data-view="kesiel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-4-1L3 20l1-5.5a8.5 8.5 0 1 1 17-3z"/></svg>Kesiel</button>
+  <button data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>More</button>
+</nav>
+
+<div class="lockscreen" id="setupScreen" hidden>
+  <img src="./img/kesiel-body.webp" alt="Kesiel">
+  <div class="lock-t">Welcome to Hearthside</div>
+  <div class="lock-s">I'm Kesiel. Let's set up your nook — it takes ten seconds.</div>
+  <form id="setupForm" class="setupform">
+    <div><label class="lbl" for="setupName">What should I call you?</label><input class="field" id="setupName" placeholder="Your name" maxlength="30" autocomplete="nickname"></div>
+    <div><label class="lbl" for="setupPass">Password <span class="lbl-soft">(optional — locks your pages)</span></label><input type="password" class="field" id="setupPass" autocomplete="new-password" placeholder="Leave blank for no lock"></div>
+    <div><input type="password" class="field" id="setupPass2" autocomplete="new-password" placeholder="Repeat the password" aria-label="Repeat the password"></div>
+    <div><label class="lbl" for="setupHint">Hint, in case you forget</label><input class="field" id="setupHint" placeholder="e.g. the name of my first cat"></div>
+    <button class="btn center" type="submit" id="setupGo"><span id="setupCandle"></span>Light the candle</button>
+    <div class="tiny muted setup-err" id="setupErr"></div>
+  </form>
+</div>
+
+<div class="lockscreen" id="lockScreen" hidden>
+  <img src="./img/kesiel-body.webp" alt="Kesiel">
+  <div class="lock-t">This journal is locked</div>
+  <div class="lock-s">Kesiel is guarding your pages. Whisper the password.</div>
+  <form class="lockform" id="lockForm">
+    <input type="password" class="field" id="lockPass" placeholder="Password" autocomplete="current-password" aria-label="Password">
+    <button class="btn" type="submit">Unlock</button>
+  </form>
+  <div class="lock-hint" id="lockHintLine"></div>
+</div>
+
+<div class="overlay" id="readerOverlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rTitle">
+    <div class="sheet-head">
+      <div>
+        <div class="e-date" id="rDate"></div>
+        <h2 class="sheet-title" id="rTitle"></h2>
+        <div class="e-meta" id="rMeta"></div>
+      </div>
+      <button class="iconbtn x" id="rClose" aria-label="Close">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="reader-body" id="rBody"></div>
+      <div class="reader-note" id="rNote" hidden>
+        <img src="./img/kesiel-head.webp" alt="">
+        <div><div class="rf-k">Kesiel's note</div><div class="rn-t" id="rNoteText"></div></div>
+      </div>
+      <button class="btn ghost sm gap" id="rEdit">✎ Edit this entry</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="confirmOverlay" hidden>
+  <div class="sheet small" role="dialog" aria-modal="true" aria-labelledby="cTitle">
+    <div class="sheet-head"><h2 class="sheet-title sm" id="cTitle"></h2></div>
+    <div class="sheet-body">
+      <p class="muted mt0" id="cText"></p>
+      <div class="optrow end">
+        <button class="btn ghost" id="cNo">Keep it</button>
+        <button class="btn danger" id="cYes">Yes, do it</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="fileOverlay" hidden>
+  <div class="sheet small" role="dialog" aria-modal="true" aria-labelledby="fTitle">
+    <div class="sheet-head"><h2 class="sheet-title sm" id="fTitle">Your file is ready</h2><button class="iconbtn x" id="fClose" aria-label="Close">✕</button></div>
+    <div class="sheet-body">
+      <p class="muted mt0" id="fText"></p>
+      <div class="optrow end">
+        <button class="btn ghost" id="fCopy">Copy instead</button>
+        <a class="btn" id="fDownload" href="#" download>Download</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="photoFile" accept="image/*" hidden>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
