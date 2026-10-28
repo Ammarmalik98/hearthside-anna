@@ -79,4 +79,4 @@ If this policy changes, the updated version will be posted at this address with 
 
 ## 11. Contact
 
-Questions or requests about your privacy: **[your-email@example.com]**
+Questions or requests about your privacy: **ammarmal33k@gmail.com**
