@@ -2,7 +2,7 @@
 
 **Effective date:** October 28, 2026
 **App:** Hearthside, a journal app for the Anna AI OS
-**Developer:** [Your name] — contact: [your-email@example.com]
+**Developer:** Ammar Malik — contact: ammarmal33k@gmail.com
 
 Hearthside is a private journal. This policy explains, in plain language, what the app stores, what it sends to AI, and what control you have. In short: your journal lives in your own Anna account, Hearthside has no servers of its own, and nothing is used for advertising.
 
