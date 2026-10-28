@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tool-dev-hearthside-kesiel"
-version = "0.1.0"
+version = "0.1.1"
 description = "Kesiel — the Executa behind the Hearthside Anna App"
 requires-python = ">=3.10"
 

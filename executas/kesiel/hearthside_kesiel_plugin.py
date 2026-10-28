@@ -27,7 +27,7 @@ import sys
 import uuid
 from typing import Any
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 
 MANIFEST: dict[str, Any] = {
     "display_name": "Kesiel (Hearthside)",

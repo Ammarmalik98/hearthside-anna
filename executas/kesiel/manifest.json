@@ -1,6 +1,6 @@
 {
   "display_name": "Kesiel (Hearthside)",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Kesiel, the gentle companion inside the Hearthside journal: reflects on journal entries and suggests writing prompts, using Anna's LLM via reverse sampling.",
   "host_capabilities": [
     "llm.sample"

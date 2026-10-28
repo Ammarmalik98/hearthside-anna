@@ -1,7 +1,7 @@
 {
   "slug": "hearthside-kesiel",
   "name": "Kesiel (Hearthside)",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "executa_type": "tool",
   "description": "Kesiel, Hearthside's journal companion: reflects on entries and suggests prompts using Anna's LLM via reverse sampling.",
   "tool_id": "tool-dev-hearthside-kesiel",
