@@ -1,13 +1,23 @@
 {
   "display_name": "Kesiel (Hearthside)",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Kesiel, the gentle companion inside the Hearthside journal: reflects on journal entries and suggests writing prompts, using Anna's LLM via reverse sampling.",
   "host_capabilities": [
     "llm.sample"
   ],
   "credentials": [],
   "runtime": {
-    "type": "binary"
+    "type": "binary",
+    "binary": {
+      "entrypoint": {
+        "default": "bin/hearthside-kesiel",
+        "windows-x86_64": "bin/hearthside-kesiel.exe"
+      },
+      "permissions": {
+        "bin/hearthside-kesiel": "0o755",
+        "bin/hearthside-kesiel.exe": "0o755"
+      }
+    }
   },
   "tools": [
     {
