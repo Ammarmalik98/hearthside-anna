@@ -536,7 +536,7 @@ function openReader(id){
   const f = S.settings.font; $("#rBody").style.fontFamily = f === "hand" ? "'Caveat',cursive" : f === "sans" ? "'Nunito',sans-serif" : "'Lora',Georgia,serif";
   $("#rBody").style.fontSize = f === "hand" ? "21px" : "";
   $("#rNote").hidden = !e.reflection;
-  if (e.reflection) $("#rNoteText").textContent = e.reflection.text + (e.reflection.prompt ? "\n\n→ " + e.reflection.prompt : "");
+  if (e.reflection) setRich($("#rNoteText"), e.reflection.text + (e.reflection.prompt ? "\n\n→ " + e.reflection.prompt : ""));
   $("#readerOverlay").hidden = false;
 }
 $("#rClose").onclick = () => $("#readerOverlay").hidden = true;
@@ -804,7 +804,7 @@ async function llmStream({ system, messages, maxTokens = 700, onText, signal }){
 
 function kesielRules(){
   const name = S.settings.name || "the writer";
-  return `You are Kesiel, the gentle companion who lives inside "${"Hearthside"}", ${name}'s private journal app. Your personality: warm, calm, a little playful, cozy — like a friend by a fireplace. Keep replies SHORT (2-5 sentences) unless asked to summarize a long period. Your job: help ${name} find, recall, and reflect on their journal entries — locate an entry they can't find, summarize periods, notice mood patterns, and offer gentle encouragement about their writing habit. Always refer to entries by their date and title. Only use the journal digest below as your source about their life; if the answer isn't in it, say so honestly and never invent entries or details. Today is ${fmtDate(todayKey())}.\n\nJOURNAL DIGEST (newest first):\n${digest()}`;
+  return `You are Kesiel, the gentle companion who lives inside "${"Hearthside"}", ${name}'s private journal app. Your personality: warm, calm, a little playful, cozy — like a friend by a fireplace. Keep replies SHORT (2-5 sentences) unless asked to summarize a long period. Your job: help ${name} find, recall, and reflect on their journal entries — locate an entry they can't find, summarize periods, notice mood patterns, and offer gentle encouragement about their writing habit. Always refer to entries by their date and title. Formatting: plain conversational sentences; you may put an entry's title in **bold**, but use no headings, tables or code. Only use the journal digest below as your source about their life; if the answer isn't in it, say so honestly and never invent entries or details. Today is ${fmtDate(todayKey())}.\n\nJOURNAL DIGEST (newest first):\n${digest()}`;
 }
 function digest(){
   const es = alive().slice().sort((a,b) => b.date.localeCompare(a.date));
@@ -816,12 +816,28 @@ function digest(){
   }
   return out.length ? out.join("\n") : "(the journal is empty so far)";
 }
+/* Kesiel's replies sometimes use Markdown (**bold**, *italic*, "- " lists). Render the
+   small safe subset as real formatting: escape everything first, then add <strong>/<em>.
+   (innerHTML with plain tags is CSP-safe; no style attributes are ever produced.) */
+function mdLite(src){
+  let h = esc(String(src ?? ""));
+  h = h.replace(/^\s{0,3}#{1,6}\s+(.+)$/gm, "<strong>$1</strong>");         // headings → bold line
+  h = h.replace(/^\s*[-*•]\s+/gm, "• ");                                     // bullets
+  h = h.replace(/\*\*(?=\S)([\s\S]*?\S)\*\*/g, "<strong>$1</strong>");       // **bold**
+  h = h.replace(/__(?=\S)([\s\S]*?\S)__/g, "<strong>$1</strong>");           // __bold__
+  h = h.replace(/(^|[^*\w])\*(?=\S)([^*\n]*?\S)\*(?!\*)/g, "$1<em>$2</em>"); // *italic*
+  h = h.replace(/`([^`\n]+)`/g, "$1");                                         // `code` → plain
+  h = h.replace(/\*\*/g, "");                                                  // stray ** (e.g. mid-stream)
+  return h;
+}
+function setRich(el, text){ el.innerHTML = mdLite(text); }
+
 function addMsg(kind, text, thinking){
   const log = $("#chatLog");
   const div = document.createElement("div");
   div.className = "msg " + kind;
   div.innerHTML = kind === "k" ? `<img class="av" src="${KESIEL_HEAD}" alt=""><div class="bubble${thinking?" thinking":""}"></div>` : `<div class="bubble"></div>`;
-  div.querySelector(".bubble").textContent = text;
+  if (kind === "k") setRich(div.querySelector(".bubble"), text); else div.querySelector(".bubble").textContent = text;
   log.appendChild(div); log.scrollTop = log.scrollHeight;
   return div.querySelector(".bubble");
 }
@@ -839,12 +855,12 @@ async function sendChat(qOverride){
   chatCtl = new AbortController();
   try {
     const text = await llmStream({ system: kesielRules(), messages: chatTurns, maxTokens: 900, signal: chatCtl.signal,
-      onText: t => { if (!t) return; bubble.classList.remove("thinking"); bubble.textContent = t; $("#chatLog").scrollTop = $("#chatLog").scrollHeight; } });
-    bubble.classList.remove("thinking"); bubble.textContent = text || "Hmm, I came up blank. Ask me another way?";
+      onText: t => { if (!t) return; bubble.classList.remove("thinking"); setRich(bubble, t); $("#chatLog").scrollTop = $("#chatLog").scrollHeight; } });
+    bubble.classList.remove("thinking"); setRich(bubble, text || "Hmm, I came up blank. Ask me another way?");
     chatTurns.push({role:"assistant", content:text});
   } catch(e){
     bubble.classList.remove("thinking");
-    if (e && e.code === "cancelled") bubble.textContent = (e.text || "") + " …okay, stopping there.";
+    if (e && e.code === "cancelled") setRich(bubble, (e.text || "") + " …okay, stopping there.");
     else bubble.textContent = aiErrorText(e);
     chatTurns.pop();
   } finally {
@@ -864,8 +880,7 @@ $("#kesielPrompt").onclick = async () => {
   const recent = recentContext(null);
   let prompt = "";
   try {
-    const out = await anna.tools.invoke({ tool_id: KESIEL_TOOL(), method: "suggest_prompt", args: { recent } }, { timeoutMs: 50000 });
-    const r = out && (out.data || (out.result && out.result.data) || out.result || out);
+    const r = await callKesielTool("suggest_prompt", { recent }, 50000);
     prompt = (r && r.prompt) || "";
   } catch(e){}
   if (!prompt){
@@ -875,7 +890,7 @@ $("#kesielPrompt").onclick = async () => {
       const m = t.match(/\{[\s\S]*\}/); prompt = m ? (JSON.parse(m[0]).prompt || "") : t;
     } catch(e){}
   }
-  pt.textContent = String(prompt || before).trim().replace(/^["']|["']$/g, "");
+  pt.textContent = String(prompt || before).trim().replace(/\*\*|__/g, "").replace(/^["']|["']$/g, "");
   btn.disabled = false;
 };
 
@@ -895,12 +910,50 @@ function parseReflection(raw){
   if (m){ try { const j = JSON.parse(m[0]); if (j.reflection) return { text: String(j.reflection).trim(), prompt: String(j.prompt || "").trim() }; } catch(e){} }
   return t ? { text: t.replace(/^["'`]+|["'`]+$/g, ""), prompt: "" } : null;
 }
-async function reflectViaTool(args){
-  const out = await anna.tools.invoke({ tool_id: KESIEL_TOOL(), method: "reflect", args }, { timeoutMs: 70000 });
-  const r = out && (out.data || (out.result && out.result.data) || out.result || out);
-  if (out && out.success === false) throw new Error(out.error || "tool failed");
-  return parseReflection(r);
+/* Every call to Kesiel's backend tool goes through here. Results come back either as
+   {success, data} or already unwrapped, depending on the host version — accept both. */
+async function callKesielTool(method, args, timeoutMs){
+  let out;
+  try { out = await anna.tools.invoke({ tool_id: KESIEL_TOOL(), method, args }, { timeoutMs }); }
+  catch(e){ noteToolState(false, e); throw e; }
+  if (out && out.success === false){ const err = new Error(out.error || "tool failed"); noteToolState(false, err); throw err; }
+  noteToolState(true);
+  return out && (out.data || (out.result && out.result.data) || out.result || out);
 }
+async function reflectViaTool(args){
+  return parseReflection(await callKesielTool("reflect", args, 70000));
+}
+
+/* ---------- tool health (shown in Settings → Kesiel) ---------- */
+/* The app quietly falls back to Anna's AI when the tool can't run, so users never get stuck —
+   but that would hide a broken tool. This check makes its state visible and logs failures. */
+let toolState = { checked: false, ok: false, version: "", error: "" };
+function noteToolState(ok, err, version){
+  toolState = { checked: true, ok, version: version || toolState.version, error: ok ? "" : String((err && (err.message || err.code)) || err || "unknown error") };
+  if (!ok) console.warn("[hearthside] Kesiel's tool failed — using Anna's AI directly instead:", err);
+  renderToolStatus();
+}
+function renderToolStatus(){
+  const el = $("#toolStatus"); if (!el) return;
+  if (!anna){ el.textContent = "Runs inside Anna. (Preview mode: not available here.)"; $("#toolCheck").hidden = true; return; }
+  $("#toolCheck").hidden = false;
+  if (!toolState.checked){ el.textContent = "Not checked yet."; return; }
+  el.innerHTML = toolState.ok
+    ? `<span class="ok">✓ Connected</span>${toolState.version ? " · v" + esc(toolState.version) : ""} — Kesiel's reflections and prompts run through it.`
+    : `<span class="bad">✗ Not available</span> — Kesiel is using Anna's AI directly for now. <span class="tiny">(${esc(toolState.error.slice(0, 160))})</span>`;
+}
+async function checkKesielTool(){
+  if (!anna) return renderToolStatus();
+  const el = $("#toolStatus"); el.textContent = "Checking… (the first check after installing can take a little while)";
+  $("#toolCheck").disabled = true;
+  try {
+    const r = await callKesielTool("ping", {}, 60000);
+    if (!(r && r.pong)) throw new Error("unexpected reply from the tool");
+    noteToolState(true, null, r.version || "");
+  } catch(e){ /* noteToolState already recorded it */ }
+  $("#toolCheck").disabled = false;
+}
+$("#toolCheck").onclick = checkKesielTool;
 async function reflectViaLLM(args){
   const user = `${args.name ? "Writer's name: " + args.name + "\n" : ""}Entry title: ${args.title || "Untitled"}\nMood they picked: ${args.mood || "not set"}\n\nEntry:\n${args.text}${args.recent ? "\n\n(For gentle continuity only — their last few entries:)\n" + args.recent : ""}`;
   return parseReflection(await llmComplete({ system: REFLECT_SYSTEM, messages: [{ role: "user", content: user }], maxTokens: 400, temperature: 0.7 }));
@@ -933,8 +986,8 @@ function showReflectionLoading(id){
 }
 function showReflection(r, id, transient){
   const c = $("#reflectCard"); c.hidden = false; c.dataset.id = id || "";
-  const t = $("#rfText"); t.classList.remove("thinking"); t.textContent = r.text;
-  $("#rfPrompt").hidden = !r.prompt; $("#rfPromptText").textContent = r.prompt || "";
+  const t = $("#rfText"); t.classList.remove("thinking"); setRich(t, r.text);
+  $("#rfPrompt").hidden = !r.prompt; $("#rfPromptText").textContent = String(r.prompt || "").replace(/\*\*|__/g, "");
   $("#rfActs").hidden = !!transient && !aiReady();
   revealCard(c);
 }
@@ -1086,6 +1139,7 @@ function renderSettings(){
   lockUI();
   const rt = $("#reflectToggle");
   rt.classList.toggle("on", !!S.settings.reflect); rt.setAttribute("aria-checked", String(!!S.settings.reflect));
+  renderToolStatus();
   $("#storageWhere").textContent = store.kind === "anna"
     ? "Your journal is saved to your Anna account, so it's there on every device you sign in to."
     : "Preview mode: this copy is saved in this browser only. Inside Anna, your journal is saved to your Anna account.";
@@ -1349,6 +1403,7 @@ async function boot(){
   $("#navCount").textContent = alive().length;
   renderEntries(); renderSettings();
   $("#kesielPrompt").hidden = !anna;
+  if (anna) setTimeout(checkKesielTool, 1500);   // warm the tool up and show its state in Settings
   if (!anna) $("#kesielStatus").textContent = "chat wakes up when Hearthside is opened inside Anna";
   if (!S.settings.setupDone){
     if (S.settings.passHash){ S.settings.setupDone = true; saveSettings(); showLock(); }

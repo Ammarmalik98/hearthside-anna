@@ -16,13 +16,14 @@ bundle/                   the app itself (what Anna shows in its window)
   anna-tool-ids.js        placeholder; `anna-app dev` / `apps publish` overwrite it
   img/, fonts/            Kesiel art, app icon, self-hosted fonts (OFL, see fonts/LICENSE.txt)
 assets/                   store artwork: hearthside-icon-512.png (logo_file), 1024px copy
-executas/kesiel/          the backend tool (Python, stdlib only)
-  hearthside_kesiel_plugin.py   JSON-RPC over stdio; reflect / suggest_prompt / ping
-  manifest.json           what `describe` returns (kept identical, checked by the tests)
-  executa.json            local + binary distribution profiles
+executas/kesiel/          the backend tool (Go, standard library only → one static binary)
+  main.go                 JSON-RPC over stdio; reflect / suggest_prompt / ping; reverse sampling
+  manifest.json           what `describe` returns (embedded into the binary; the single source of truth)
+  executa.json            local + binary distribution profiles, one archive per platform
+  .anna/executa.json      the tool's identity on Anna (written by publish — keep it)
 fixtures/llm.jsonl        canned AI replies for offline testing
-scripts/                  build_binary.py, test_protocol.py, fetch_binaries.py
-ci/release-executa.yml    GitHub Actions workflow (move to .github/workflows/) that builds the tool for all four platforms
+scripts/                  build_binary.py (builds + packages every platform), test_protocol.py
+ci/release-executa.yml    optional GitHub Actions workflow (place in .github/workflows/) that does the same on GitHub
 ```
 
 ## How the AI works
@@ -30,7 +31,7 @@ ci/release-executa.yml    GitHub Actions workflow (move to .github/workflows/) t
 * **Reflections** (after each save, and "Another thought"): the app calls the bundled `kesiel` tool's
   `reflect` method (`anna.tools.invoke`). The tool asks Anna's LLM through reverse sampling, so no API key
   lives anywhere. If the tool isn't installed or allowed yet, the app falls back to `anna.llm.complete`
-  with the same prompt. Keep the two prompts in step: `REFLECT_SYSTEM` in `bundle/app.js` and in the plugin.
+  with the same prompt. Keep the two prompts in step: `REFLECT_SYSTEM` in `bundle/app.js` and `reflectSystem` in `executas/kesiel/main.go`.
 * **✦ prompt button**: `suggest_prompt` on the tool, with the same fallback.
 * **Ask Kesiel chat**: `anna.llm.stream` (word-by-word), falling back to `anna.llm.complete`.
 
@@ -57,26 +58,28 @@ anna-app validate --strict
 anna-app dev --mock-llm fixtures/llm.jsonl     # offline, canned AI replies → http://localhost:5180/
 anna-app login --host https://anna.partners    # then, for real AI:
 anna-app dev --storage aps                     # real Anna storage + LLM on your account
-python scripts/test_protocol.py                # backend tool protocol test
+python scripts/test_protocol.py --archives     # backend tool protocol + archive test (needs Go)
 ```
 
 ## Publish
 
-1. Put this folder in a GitHub repository (the `.gitignore` keeps build output out), and move
-   `ci/release-executa.yml` to `.github/workflows/release-executa.yml` so GitHub Actions picks it up.
-2. Actions tab → **Release Kesiel Executa binaries** → Run workflow (tag `kesiel-v0.1.0`).
-   It builds Linux x64 (Anna's cloud agent), macOS arm64/x64 and Windows x64, runs the protocol test on each,
-   and attaches them to a GitHub Release.
-3. `python scripts/fetch_binaries.py --repo <you>/<repo>` downloads them into `executas/kesiel/dist/`.
-4. `anna-app login --host https://anna.partners`, then `anna-app apps publish`.
+1. **Build the tool** (only when it changed): install Go 1.22+ from https://go.dev/dl/, then
+   `python scripts/build_binary.py`. Go cross-compiles every platform from your own computer
+   (Linux x64/ARM — Anna's Cloud Agent runs Linux — macOS ARM/Intel and Windows x64) into
+   `executas/kesiel/dist/`, packaged like Anna's reference apps: `manifest.json` (with `runtime.binary`)
+   plus `bin/hearthside-kesiel`. Check them with `python scripts/test_protocol.py --archives`.
+   (Or let GitHub do it: put `ci/release-executa.yml` in `.github/workflows/`, run it, and download the
+   release files into `executas/kesiel/dist/`.)
+2. `anna-app login --host https://anna.partners`, then `anna-app apps publish`.
    This uploads the bundle, publishes the tool and its binaries, writes the real tool id into
-   `bundle/anna-tool-ids.js`, and creates a version.
-5. Install that version on Anna and test it, including the cloud agent (Linux). Then **Submit for review**
-   in the Developer Console and **Release** once it's approved.
+   `bundle/anna-tool-ids.js`, and creates the version in `app.json`.
+3. Install that version on Anna **on a Cloud Agent, from a fresh install**, and test it end to end.
+   Settings → Kesiel → **Kesiel's helper tool** must say **✓ Connected** with the tool's version.
+   Then **Submit for review** in the Developer Console.
 
-When you change the tool, bump `version` in `executas/kesiel/executa.json` **and** the plugin's `VERSION`.
-Run `python -c "import json,sys; sys.path.insert(0,'executas/kesiel'); import hearthside_kesiel_plugin as k; json.dump(k.MANIFEST, open('executas/kesiel/manifest.json','w'), indent=2, ensure_ascii=False)"`
-to regenerate its manifest, then release with a matching `kesiel-v<version>` tag.
+**Versions.** A published version is frozen. When the tool changes, bump `version` in **both**
+`executas/kesiel/manifest.json` and `executas/kesiel/executa.json` (the build script refuses a mismatch),
+rebuild, and bump the app's `version` in `app.json` (or use `anna-app apps publish --bump patch`).
 
 ## Still to check on Anna's live platform
 

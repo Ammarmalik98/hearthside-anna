@@ -265,7 +265,11 @@
           <div><b>Reflect on my entries</b><div class="tiny muted">After you save, Kesiel offers a short reflection and a question to carry forward.</div></div>
           <button class="switch" id="reflectToggle" role="switch" aria-checked="true" aria-label="Kesiel reflections"></button>
         </div>
-        <p class="tiny muted note">Kesiel thinks with Anna's built-in AI. Only the entry you're reflecting on (or the pages you ask about) is sent, and only when you save or ask.</p>
+        <div class="toolrow" id="toolRow">
+          <div><b>Kesiel's helper tool</b><div class="tiny muted" id="toolStatus">Not checked yet.</div></div>
+          <button class="btn ghost sm" id="toolCheck" type="button">Check</button>
+        </div>
+        <p class="tiny muted note">Kesiel thinks with Anna's built-in AI, and only when you save an entry or ask him something. A reflection reads that entry plus short excerpts of your last three; in chat he reads short excerpts of your entries so he can find things. Photos are never sent.</p>
       </div>
 
       <div class="card setsec" id="remindSec">

@@ -520,6 +520,11 @@ body.focus .toolbar{top:8px}
 .rn-t{white-space:pre-line; font-family:'Lora',Georgia,serif; font-size:14.5px; line-height:1.6; color:var(--ink2); margin-top:2px}
 .kchip{display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:700; color:var(--accent)}
 
+/* ---------- Kesiel's tool status (Settings) ---------- */
+.toolrow{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px; padding:11px 13px; border-radius:12px; background:var(--accent-soft2); border:1px dashed var(--line)}
+.toolrow .ok{color:var(--pos); font-weight:700}
+.toolrow .bad{color:var(--danger); font-weight:700}
+
 /* ---------- small refinements ---------- */
 .nav button.on{box-shadow:inset 3px 0 0 var(--accent)}
 .promptcard .pc-m{flex:1; min-width:0}
