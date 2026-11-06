@@ -44,7 +44,7 @@ const cssVar = name => getComputedStyle(document.documentElement).getPropertyVal
 /* ============ state & storage ============ */
 let S = { entries: [], settings: {} };
 const DEF_SET = { theme:"system", paper:"lined", font:"serif", name:"", passHash:"", passHint:"", seeded:false, setupDone:false,
-  reflect:true, remindLast:"", remindSnooze:0 };
+  reflect:true, photoSight:true, remindLast:"", remindSnooze:0 };
 const DEF_REMIND = { on:false, time:"21:00", days:[0,1,2,3,4,5,6], skip:true };
 
 /* Two interchangeable stores with one tiny async API: get / set / del / keys.
@@ -204,6 +204,7 @@ function sanitizeHtml(dirty){
       [...el.attributes].forEach(a => {
         const n = a.name.toLowerCase();
         if (n === "src" && el.tagName === "IMG" && a.value.startsWith("data:image/")) return;
+        if (n === "alt" && el.tagName === "IMG"){ el.setAttribute("alt", a.value.replace(/\s+/g, " ").trim().slice(0, 400)); return; }
         if (n === "href" && el.tagName === "A" && /^https?:/i.test(a.value)) { el.setAttribute("rel","noopener"); el.setAttribute("target","_blank"); return; }
         if (n === "style") {
           const bg = el.style.backgroundColor;
@@ -294,10 +295,28 @@ const PROMPTS = [
 let promptIx = Math.floor(Math.random() * PROMPTS.length);
 function showPrompt(){ $("#promptText").textContent = PROMPTS[promptIx % PROMPTS.length]; }
 $("#newPrompt").onclick = () => { promptIx++; showPrompt(); };
+/* Start a fresh page with the prompt as the entry's title and the caret in the body.
+   Whatever was on the page is saved first; a page holding only the prompt is never saved. */
+let promptOnly = "";
+function startPageWithPrompt(p, msg){
+  p = String(p || "").replace(/\s+/g, " ").trim().slice(0, 200); if (!p) return;
+  const hasContent = stripHtml(edBody.innerHTML) || $("#edTitle").value.trim() || edBody.querySelector("img");
+  if (curId || hasContent){ persistCurrent(true); newEntry(); renderEntries(); }
+  if (VIEW !== "write") goView("write");
+  edBody.innerHTML = "";
+  $("#edTitle").value = p;
+  promptOnly = p;
+  updateWc();
+  const card = $("#editorCard");
+  card.scrollIntoView({ behavior: "smooth", block: "start" });
+  card.classList.remove("warm"); void card.offsetWidth; card.classList.add("warm");
+  setTimeout(() => card.classList.remove("warm"), 1700);
+  edBody.focus();
+  toast(msg);
+}
 $("#usePrompt").onclick = () => {
-  const p = $("#promptText").textContent;
-  const bq = document.createElement("blockquote"); bq.textContent = p;
-  $("#edBody").prepend(bq); $("#edBody").focus(); scheduleAutosave(); updateWc();
+  startPageWithPrompt($("#promptText").textContent, "A fresh page, with the prompt as its title.");
+  promptIx++; showPrompt();            // the card moves on to a new prompt
 };
 function greet(){
   const h = new Date().getHours(); const n = S.settings.name || "friend";
@@ -314,7 +333,7 @@ let savedRange = null;
 const edBody = $("#edBody");
 
 function newEntry(){
-  curId = null;
+  curId = null; promptOnly = "";
   $("#edTitle").value = ""; edBody.innerHTML = ""; $("#edTags").value = "";
   $$(".mood").forEach(m => m.classList.remove("on"));
   $("#edDate").textContent = fmtDate(todayKey());
@@ -339,6 +358,7 @@ function persistCurrent(silent){
   const text = stripHtml(html);
   const title = $("#edTitle").value.trim();
   if (!text && !title && !html.includes("<img")) return false;
+  if (!curId && promptOnly && !text && title === promptOnly && !html.includes("<img")) return false; // nothing written yet
   const now = Date.now();
   let e = curId && S.entries.find(x => x.id === curId);
   if (!e) { e = { id: uid(), date: todayKey(), createdAt: now, del: false }; S.entries.push(e); curId = e.id; }
@@ -442,6 +462,7 @@ $("#photoFile").onchange = async e => {
     if (r && edBody.contains(r.commonAncestorContainer)) { r.collapse(false); r.insertNode(img); }
     else edBody.appendChild(img);
     updateWc(); scheduleAutosave(); toast("Photo tucked in. 📷");
+    describePhotoInEditor(img);
   } catch(err){ toast("That photo couldn't be read."); }
 };
 function compressImage(file, maxSide, q){
@@ -804,13 +825,14 @@ async function llmStream({ system, messages, maxTokens = 700, onText, signal }){
 
 function kesielRules(){
   const name = S.settings.name || "the writer";
-  return `You are Kesiel, the gentle companion who lives inside "${"Hearthside"}", ${name}'s private journal app. Your personality: warm, calm, a little playful, cozy — like a friend by a fireplace. Keep replies SHORT (2-5 sentences) unless asked to summarize a long period. Your job: help ${name} find, recall, and reflect on their journal entries — locate an entry they can't find, summarize periods, notice mood patterns, and offer gentle encouragement about their writing habit. Always refer to entries by their date and title. Formatting: plain conversational sentences; you may put an entry's title in **bold**, but use no headings, tables or code. Only use the journal digest below as your source about their life; if the answer isn't in it, say so honestly and never invent entries or details. Today is ${fmtDate(todayKey())}.\n\nJOURNAL DIGEST (newest first):\n${digest()}`;
+  return `You are Kesiel, the gentle companion who lives inside "${"Hearthside"}", ${name}'s private journal app. Your personality: warm, calm, a little playful, cozy — like a friend by a fireplace. Keep replies SHORT (2-5 sentences) unless asked to summarize a long period. Your job: help ${name} find, recall, and reflect on their journal entries — locate an entry they can't find, summarize periods, notice mood patterns, and offer gentle encouragement about their writing habit. Always refer to entries by their date and title. Formatting: plain conversational sentences; you may put an entry's title in **bold**, but use no headings, tables or code. Entries can include photos. You can't see them, but each photo has a short description written when it was added, shown in the digest as "photos: ...". Use those descriptions to answer questions about pictures (what they show, when they were added). A photo marked "not described" exists but you don't know what it shows: say so rather than guessing. Only use the journal digest below as your source about their life; if the answer isn't in it, say so honestly and never invent entries or details. Today is ${fmtDate(todayKey())}.\n\nJOURNAL DIGEST (newest first):\n${digest()}`;
 }
 function digest(){
   const es = alive().slice().sort((a,b) => b.date.localeCompare(a.date));
   let out = [], budget = 38000;
   for (const e of es){
-    const line = `${e.date} | "${(e.title||"Untitled").slice(0,80)}" | mood: ${e.mood ? MOODS[e.mood].n : "—"} | tags: ${(e.tags||[]).join(",")||"—"} | ${e.words}w | ${e.text.slice(0,240)}`;
+    const ph = photoNotes(e);
+    const line = `${e.date} | "${(e.title||"Untitled").slice(0,140)}" | mood: ${e.mood ? MOODS[e.mood].n : "—"} | tags: ${(e.tags||[]).join(",")||"—"} | ${e.words}w | ${e.text.slice(0,240)}${ph ? " | photos: " + ph : ""}`;
     if (budget - line.length < 0) break;
     budget -= line.length; out.push(line);
   }
@@ -854,6 +876,7 @@ async function sendChat(qOverride){
   $("#chatSend").disabled = true; $("#chatStop").hidden = false;
   chatCtl = new AbortController();
   try {
+    if (photosNeedingWords(8).length){ bubble.textContent = "Kesiel is looking at your photos…"; await describeMissingPhotos(8, 40000); bubble.textContent = "Kesiel is flipping through your pages…"; }
     const text = await llmStream({ system: kesielRules(), messages: chatTurns, maxTokens: 900, signal: chatCtl.signal,
       onText: t => { if (!t) return; bubble.classList.remove("thinking"); setRich(bubble, t); $("#chatLog").scrollTop = $("#chatLog").scrollHeight; } });
     bubble.classList.remove("thinking"); setRich(bubble, text || "Hmm, I came up blank. Ask me another way?");
@@ -893,6 +916,120 @@ $("#kesielPrompt").onclick = async () => {
   pt.textContent = String(prompt || before).trim().replace(/\*\*|__/g, "").replace(/^["']|["']$/g, "");
   btn.disabled = false;
 };
+
+/* ---------- photo sight ---------- */
+/* Kesiel can't search pixels, so each photo gets a one-line description the first time
+   it's added, written by Anna's AI from a small copy of the image (llm.complete accepts
+   MCP image blocks). The description is stored as the photo's alt text inside the entry,
+   so it travels with backups and is read in chat and reflections. Off switch: Settings → Kesiel. */
+const PHOTO_SYSTEM = "You describe photos for a private journal so the writer can find them later. In one or two plain sentences (under 40 words), say what the photo shows: the main subject, any food or drink, the place, roughly how many people (never guess who they are), any readable text, and the mood. No preamble, no quotation marks.";
+const photoCache = new Map();    // image src → description
+const photoJobs = new Map();     // image src → Promise<description>
+const photoFailed = new Map();   // image src → time of the last failed attempt (retry after 10 minutes)
+const recentlyFailed = src => (Date.now() - (photoFailed.get(src) || 0)) < 600000;
+const canSeePhotos = () => !!anna && !!S.settings.photoSight;
+
+function imgsOf(html){
+  if (!html || html.indexOf("<img") < 0) return [];
+  const t = document.createElement("template"); t.innerHTML = html;
+  return [...t.content.querySelectorAll("img")];
+}
+function photoNotes(e){
+  const imgs = imgsOf(e.html); if (!imgs.length) return "";
+  return imgs.map((im, i) => {
+    const d = (im.getAttribute("alt") || photoCache.get(im.getAttribute("src")) || "").trim();
+    return d ? d : (S.settings.photoSight ? "a photo (not described)" : "a photo (photo descriptions are switched off)");
+  }).join("; ").slice(0, 700);
+}
+function shrinkForVision(src, maxSide){
+  return new Promise((res, rej) => {
+    const im = new Image();
+    im.onload = () => {
+      const sc = Math.min(1, maxSide / Math.max(im.width, im.height));
+      const c = document.createElement("canvas");
+      c.width = Math.max(1, Math.round(im.width * sc)); c.height = Math.max(1, Math.round(im.height * sc));
+      c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+      res(c.toDataURL("image/jpeg", 0.75));
+    };
+    im.onerror = () => rej(new Error("image could not be read"));
+    im.src = src;
+  });
+}
+async function describePhoto(src){
+  if (!canSeePhotos() || !src || !src.startsWith("data:image/")) return "";
+  if (photoCache.has(src)) return photoCache.get(src);
+  if (photoJobs.has(src)) return photoJobs.get(src);
+  if (recentlyFailed(src)) return "";
+  const job = (async () => {
+    let small;
+    try { small = await shrinkForVision(src, 640); } catch(e){ photoFailed.set(src, Date.now()); return ""; }
+    const m = /^data:(image\/[a-z0-9.+-]+);base64,(.+)$/i.exec(small); if (!m) return "";
+    const image = { type: "image", data: m[2], mimeType: m[1] };
+    const tries = [
+      [{ role: "user", content: image }],
+      [{ role: "user", content: image }, { role: "user", content: { type: "text", text: "Describe this journal photo." } }],
+    ];
+    let lastErr = null;
+    for (const messages of tries){
+      try {
+        const out = await anna.llm.complete({ systemPrompt: PHOTO_SYSTEM, messages, maxTokens: 120, temperature: 0.2 }, { timeoutMs: 45000 });
+        const txt = (out && out.content && (out.content.text ?? (Array.isArray(out.content) ? out.content.map(c => c.text || "").join("") : ""))) || "";
+        const d = txt.replace(/\s+/g, " ").replace(/^["']|["']$/g, "").trim().slice(0, 300);
+        if (d){ photoCache.set(src, d); return d; }
+      } catch(e){ lastErr = e; }
+    }
+    if (lastErr) console.warn("[hearthside] couldn't describe a photo:", lastErr);
+    photoFailed.set(src, Date.now());
+    return "";
+  })();
+  photoJobs.set(src, job);
+  try { return await job; } finally { photoJobs.delete(src); }
+}
+/* Put a finished description onto every copy of that photo: the open page and saved entries. */
+function applyPhotoDescription(src, d){
+  if (!d) return;
+  let touchedEditor = false;
+  edBody.querySelectorAll("img").forEach(im => { if (im.getAttribute("src") === src && !im.getAttribute("alt")){ im.setAttribute("alt", d); touchedEditor = true; } });
+  if (touchedEditor) scheduleAutosave();
+  S.entries.forEach(e => {
+    if (!e.html || e.id === curId || e.html.indexOf(src) < 0) return;
+    const t = document.createElement("template"); t.innerHTML = e.html;
+    let changed = false;
+    t.content.querySelectorAll("img").forEach(im => { if (im.getAttribute("src") === src && !im.getAttribute("alt")){ im.setAttribute("alt", d); changed = true; } });
+    if (changed){ e.html = sanitizeHtml(t.innerHTML); e.updatedAt = Date.now(); saveEntry(e); }
+  });
+}
+async function describePhotoInEditor(img){
+  if (!canSeePhotos()) return;
+  const src = img.getAttribute("src");
+  applyPhotoDescription(src, await describePhoto(src));
+}
+async function describeEntryPhotos(e, timeoutMs){
+  if (!canSeePhotos()) return;
+  const srcs = imgsOf(e.html).filter(im => !im.getAttribute("alt")).map(im => im.getAttribute("src")).slice(0, 4);
+  if (!srcs.length) return;
+  const work = Promise.all(srcs.map(async src => applyPhotoDescription(src, await describePhoto(src))));
+  await Promise.race([work, new Promise(r => setTimeout(r, timeoutMs))]);
+  const fresh = S.entries.find(x => x.id === e.id); if (fresh && fresh !== e) Object.assign(e, fresh);
+  if (e.id === curId) persistCurrent(true);   // the open page holds the newest alt text
+}
+function photosNeedingWords(limit){
+  if (!canSeePhotos()) return [];
+  const out = [];
+  for (const e of alive().slice().sort((a,b) => (b.updatedAt||0) - (a.updatedAt||0))){
+    for (const im of imgsOf(e.html)){
+      const src = im.getAttribute("src");
+      if (!im.getAttribute("alt") && !photoCache.has(src) && !recentlyFailed(src) && !out.includes(src)) out.push(src);
+      if (out.length >= limit) return out;
+    }
+  }
+  return out;
+}
+async function describeMissingPhotos(limit, timeoutMs){
+  const srcs = photosNeedingWords(limit); if (!srcs.length) return;
+  const work = (async () => { for (const src of srcs) applyPhotoDescription(src, await describePhoto(src)); })();
+  await Promise.race([work, new Promise(r => setTimeout(r, timeoutMs))]);
+}
 
 /* ---------- reflections ---------- */
 /* Same voice as the Executa's prompt (executas/kesiel/hearthside_kesiel_plugin.py) — keep them in step. */
@@ -967,7 +1104,10 @@ async function reflectOn(e, force){
   if (!aiReady()){ showReflection({ text: "I'll be able to reflect on your pages when Hearthside is opened inside Anna.", prompt: "" }, e.id, true); return; }
   const my = ++reflectSeq; reflectFor = e.id;
   showReflectionLoading(e.id);
-  const args = { text: e.text.slice(0, 6000), title: e.title || "", mood: e.mood ? MOODS[e.mood].n : "", name: S.settings.name && S.settings.name !== "friend" ? S.settings.name : "", recent: recentContext(e.id) };
+  await describeEntryPhotos(e, 20000);
+  if (my !== reflectSeq) return;
+  const ph = photoNotes(e);
+  const args = { text: (e.text + (ph ? "\n\n[Photos in this entry: " + ph + "]" : "")).slice(0, 6000), title: e.title || "", mood: e.mood ? MOODS[e.mood].n : "", name: S.settings.name && S.settings.name !== "friend" ? S.settings.name : "", recent: recentContext(e.id) };
   let r = null, err = null;
   try { r = await reflectViaTool(args); } catch(x){ err = x; }
   if (!r || !r.text){ try { r = await reflectViaLLM(args); err = null; } catch(x){ err = x; } }
@@ -994,14 +1134,7 @@ function showReflection(r, id, transient){
 function hideReflection(){ reflectSeq++; const c = $("#reflectCard"); if (c) c.hidden = true; }
 $("#rfClose").onclick = () => { $("#reflectCard").hidden = true; };
 $("#rfAgain").onclick = () => { const e = S.entries.find(x => x.id === $("#reflectCard").dataset.id) || (curId && S.entries.find(x => x.id === curId)); reflectOn(e, true); };
-$("#rfPrompt").onclick = () => {
-  const p = $("#rfPromptText").textContent; if (!p) return;
-  persistCurrent(true); newEntry();
-  const bq = document.createElement("blockquote"); bq.textContent = p;
-  edBody.appendChild(bq); edBody.appendChild(document.createElement("p"));
-  edBody.focus(); updateWc(); scrollTo({ top: 0, behavior: "smooth" });
-  toast("A fresh page, with Kesiel's question at the top.");
-};
+$("#rfPrompt").onclick = () => startPageWithPrompt($("#rfPromptText").textContent, "A fresh page, with Kesiel's question as its title.");
 
 /* ============ privacy lock ============ */
 async function hashPass(p){
@@ -1137,6 +1270,8 @@ $("#eraseAll").onclick = () => askConfirm("Erase the whole journal?", "Every ent
 function renderSettings(){
   $("#setName").value = S.settings.name || "";
   lockUI();
+  const pt = $("#photoToggle");
+  pt.classList.toggle("on", !!S.settings.photoSight); pt.setAttribute("aria-checked", String(!!S.settings.photoSight));
   const rt = $("#reflectToggle");
   rt.classList.toggle("on", !!S.settings.reflect); rt.setAttribute("aria-checked", String(!!S.settings.reflect));
   renderToolStatus();
@@ -1145,6 +1280,11 @@ function renderSettings(){
     : "Preview mode: this copy is saved in this browser only. Inside Anna, your journal is saved to your Anna account.";
   renderRemind();
 }
+$("#photoToggle").onclick = () => {
+  S.settings.photoSight = !S.settings.photoSight; saveSettings(); renderSettings();
+  toast(S.settings.photoSight ? "Kesiel will describe new photos so he can find them later." : "Kesiel won't look at your photos.");
+  if (S.settings.photoSight) describeMissingPhotos(4, 60000);
+};
 $("#reflectToggle").onclick = () => {
   S.settings.reflect = !S.settings.reflect; saveSettings(); renderSettings();
   toast(S.settings.reflect ? "Kesiel will reflect when you save an entry." : "Kesiel will stay quiet after you save.");
@@ -1404,6 +1544,7 @@ async function boot(){
   renderEntries(); renderSettings();
   $("#kesielPrompt").hidden = !anna;
   if (anna) setTimeout(checkKesielTool, 1500);   // warm the tool up and show its state in Settings
+  if (anna) setTimeout(() => describeMissingPhotos(4, 90000), 6000);   // photos added before descriptions existed
   if (!anna) $("#kesielStatus").textContent = "chat wakes up when Hearthside is opened inside Anna";
   if (!S.settings.setupDone){
     if (S.settings.passHash){ S.settings.setupDone = true; saveSettings(); showLock(); }

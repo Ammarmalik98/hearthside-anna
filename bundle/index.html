@@ -100,7 +100,7 @@
             <svg class="i-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
           </button>
         </div>
-        <input class="ed-title" id="edTitle" placeholder="Give this entry a title…" maxlength="120" aria-label="Entry title">
+        <input class="ed-title" id="edTitle" placeholder="Give this entry a title…" maxlength="200" aria-label="Entry title">
         <div class="moodrow" id="moodRow">
           <span class="mlbl">Mood</span>
           <button class="mood" data-m="5" title="Wonderful" aria-label="Wonderful">😄</button>
@@ -265,11 +265,15 @@
           <div><b>Reflect on my entries</b><div class="tiny muted">After you save, Kesiel offers a short reflection and a question to carry forward.</div></div>
           <button class="switch" id="reflectToggle" role="switch" aria-checked="true" aria-label="Kesiel reflections"></button>
         </div>
+        <div class="switchrow gap">
+          <div><b>Let Kesiel see my photos</b><div class="tiny muted">When you add a photo, Kesiel writes a one-line description of it, so you can ask him about your pictures later.</div></div>
+          <button class="switch" id="photoToggle" role="switch" aria-checked="true" aria-label="Photo descriptions"></button>
+        </div>
         <div class="toolrow" id="toolRow">
           <div><b>Kesiel's helper tool</b><div class="tiny muted" id="toolStatus">Not checked yet.</div></div>
           <button class="btn ghost sm" id="toolCheck" type="button">Check</button>
         </div>
-        <p class="tiny muted note">Kesiel thinks with Anna's built-in AI, and only when you save an entry or ask him something. A reflection reads that entry plus short excerpts of your last three; in chat he reads short excerpts of your entries so he can find things. Photos are never sent.</p>
+        <p class="tiny muted note">Kesiel thinks with Anna's built-in AI, and only when you save an entry or ask him something. A reflection reads that entry plus short excerpts of your last three; in chat he reads short excerpts of your entries so he can find things. When you add a photo, a small copy is sent to write its description (once, unless it needs a retry); the description is saved with the entry, and the photo isn't sent again.</p>
       </div>
 
       <div class="card setsec" id="remindSec">
