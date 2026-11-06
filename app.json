@@ -1,12 +1,12 @@
 {
   "slug": "hearthside",
   "name": "Hearthside",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "tagline": "A warm, distraction-free journal with Kesiel, a companion who reflects on what you write.",
   "description": "Hearthside is a cozy, distraction-free journal. Write with rich formatting and photos, tag your mood, and watch your habit grow on a calendar and gentle charts. After each entry, Kesiel — your companion — reads it and offers a short, warm reflection and a question to carry into tomorrow. Ask Kesiel to find anything you've written (\"when did I mention the beach?\") or sum up your week. Includes a daily writing reminder, a focus mode, light and dark themes, an optional privacy lock, and backups you can take anywhere. Your journal is saved to your Anna account; Kesiel thinks with Anna's built-in AI, and only reads your pages when you save an entry or ask him something.",
   "category": "productivity",
   "logo_file": "assets/hearthside-icon-512.png",
-  "changelog": "Fix: Kesiel's helper tool is now a small self-contained program that installs and runs on every Anna agent, including Cloud Agents (it previously failed to deploy). New: Settings → Kesiel shows whether the tool is connected. Kesiel's replies now show bold and italics properly. Clearer privacy note.",
+  "changelog": "Kesiel can now find your photos: each photo you add gets a short description, so you can ask him about your pictures (switch it off in Settings → Kesiel). \"Write about it\" now opens a fresh page with the prompt at the top, and the prompt card moves on to a new one.",
   "bundled_executas": {
     "kesiel": {
       "path": "executas/kesiel"
